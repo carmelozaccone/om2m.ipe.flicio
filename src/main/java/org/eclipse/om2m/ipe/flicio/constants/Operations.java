@@ -26,14 +26,24 @@ import org.eclipse.om2m.commons.exceptions.BadRequestException;
  */
 public enum Operations {
 	
-	GET_STATE("getState"),
-	GET_STATE_DIRECT("getStateDirect"),
-	SET_ON("setOn"),
-	SET_OFF("setOff"),
-	TOGGLE("toggle"),
-	ALL_ON("allOn"),
-	ALL_OFF("allOff"),
-	ALL_TOGGLE("allToggle");
+	GET_STATE_POSITION("getStatePosition"),
+	GET_STATE_POSITION_DIRECT("getStatePositionDirect"),	
+	GET_STATE_PEERING("getStatePeering"),
+	GET_STATE_PEERING_DIRECT("getStatePeeringDirect"),
+	GET_STATE_CLICK("getStateClick"),
+	GET_STATE_CLICK_DIRECT("getStateClickDirect"),
+	GET_STATE_DOUBLECLICK("getStateDoubleClick"),
+	GET_STATE_DOUBLECLICK_DIRECT("getStateDoubleClickDirect"),
+	GET_STATE_HOLD("getStateHold"),
+	GET_STATE_HOLD_DIRECT("getStateHoldDirect"),
+	
+	SET_STATE_DESCRIPTOR("Descriptor"),
+	SET_STATE_POSITION("Position"),
+	SET_STATE_PEERING("Peering"),
+	SET_STATE_CLICK("Click-Entity"),
+	SET_STATE_DOUBLECLICK("DoubleClick-Entity"),
+	SET_STATE_HOLD("Hold-Time_BetweenPositions");
+	
 	private final String value;
 	
 	private Operations(final String value){
@@ -53,7 +63,7 @@ public enum Operations {
 	 * @param operation
 	 * @return
 	 */
-	public static Operations getOperationFromString(String operation){
+	public static Operations getOperationFromString(String operation) throws BadRequestException {
 		for(Operations op : values()){
 			if(op.getValue().equals(operation)){
 				return op;

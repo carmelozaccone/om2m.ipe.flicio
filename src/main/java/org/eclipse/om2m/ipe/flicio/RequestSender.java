@@ -77,6 +77,5 @@ public class RequestSender {
 		request.setOperation(Operation.RETRIEVE);
 		request.setRequestContentType(MimeMediaType.OBJ);
 		return SampleController.CSE.doRequest(request);
-	}
-	
+	}	
 }

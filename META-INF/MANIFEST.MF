@@ -12,4 +12,6 @@ Import-Package: org.apache.commons.logging,
  org.eclipse.om2m.interworking.service,
  org.osgi.framework,
  org.osgi.util.tracker
+Bundle-Vendor: Skylane Optics
+FlicIO-DeamonHost: localhost
 

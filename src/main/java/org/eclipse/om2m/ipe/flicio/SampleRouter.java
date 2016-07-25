@@ -29,6 +29,7 @@ import org.eclipse.om2m.commons.resource.ResponsePrimitive;
 import org.eclipse.om2m.interworking.service.InterworkingService;
 import org.eclipse.om2m.ipe.flicio.constants.Operations;
 import org.eclipse.om2m.ipe.flicio.constants.SampleConstants;
+import org.eclipse.om2m.ipe.flicio.constants.SampleConstants.DATA_QUERY_STRING;
 import org.eclipse.om2m.ipe.flicio.controller.SampleController;
 
 public class SampleRouter implements InterworkingService{
@@ -38,44 +39,67 @@ public class SampleRouter implements InterworkingService{
 	@Override
 	public ResponsePrimitive doExecute(RequestPrimitive request) {
 		ResponsePrimitive response = new ResponsePrimitive(request);
-		if(request.getQueryStrings().containsKey("op")){
-			String operation = request.getQueryStrings().get("op").get(0);
+		if(request.getQueryStrings().containsKey(DATA_QUERY_STRING.op)){
+			String operation = request.getQueryStrings().get(DATA_QUERY_STRING.op).get(0);
 			Operations op = Operations.getOperationFromString(operation);
-			String lampid= null;
-			if(request.getQueryStrings().containsKey("lampid")){
-				lampid = request.getQueryStrings().get("lampid").get(0);
+			String clickButtonID = null;
+			if(request.getQueryStrings().containsKey(DATA_QUERY_STRING.clickbuttonid)){
+				clickButtonID = request.getQueryStrings().get(DATA_QUERY_STRING.clickbuttonid).get(0);
 			}
-			LOGGER.info("Received request in Flio.io Sample IPE: op=" + operation + " ; lampid=" + lampid);
+			LOGGER.info("Received request in Flic.io Sample IPE: "+DATA_QUERY_STRING.op+"=" + operation + " ; "+DATA_QUERY_STRING.clickbuttonid+" [" + clickButtonID+"]");
+
+			String content = null;
 			switch(op){
-			case SET_ON:
-				SampleController.setLampState(lampid, true);
-				response.setResponseStatusCode(ResponseStatusCode.OK);
-				break;
-			case SET_OFF:
-				SampleController.setLampState(lampid, false);
-				response.setResponseStatusCode(ResponseStatusCode.OK);
-				break;
-			case TOGGLE:
-				SampleController.toggleLamp(lampid);
-				response.setResponseStatusCode(ResponseStatusCode.OK);
-				break;
-			case ALL_ON:
-				SampleController.setAllOn();
-				response.setResponseStatusCode(ResponseStatusCode.OK);
-				break;
-			case ALL_OFF:
-				SampleController.setAllOff();
-				response.setResponseStatusCode(ResponseStatusCode.OK);
-				break;
-			case ALL_TOGGLE:
-				SampleController.toogleAll();
-            	response.setResponseStatusCode(ResponseStatusCode.OK);
-            	break;
-			case GET_STATE:
+			case GET_STATE_POSITION:
 				// Shall not get there...
 				throw new BadRequestException();
-			case GET_STATE_DIRECT:
-				String content = SampleController.getFormatedLampState(lampid);
+		
+			case GET_STATE_POSITION_DIRECT:
+				content = SampleController.getFormattedClickButtonPosition(clickButtonID);
+				response.setContent(content);
+				request.setReturnContentType(MimeMediaType.OBIX);
+				response.setResponseStatusCode(ResponseStatusCode.OK);
+				break;
+				
+			case GET_STATE_PEERING:
+				// Shall not get there...
+				throw new BadRequestException();
+	
+			case GET_STATE_PEERING_DIRECT:
+				content = SampleController.getFormattedClickButtonPeering(clickButtonID);
+				response.setContent(content);
+				request.setReturnContentType(MimeMediaType.OBIX);
+				response.setResponseStatusCode(ResponseStatusCode.OK);
+				break;
+				
+			case GET_STATE_CLICK:
+				// Shall not get there...
+				throw new BadRequestException();
+
+			case GET_STATE_CLICK_DIRECT:
+				content = SampleController.getFormattedClickButtonClick(clickButtonID);
+				response.setContent(content);
+				request.setReturnContentType(MimeMediaType.OBIX);
+				response.setResponseStatusCode(ResponseStatusCode.OK);
+				break;
+				
+			case GET_STATE_DOUBLECLICK:
+				// Shall not get there...
+				throw new BadRequestException();
+
+			case GET_STATE_DOUBLECLICK_DIRECT:
+				content = SampleController.getFormattedClickButtonDoubleClick(clickButtonID);
+				response.setContent(content);
+				request.setReturnContentType(MimeMediaType.OBIX);
+				response.setResponseStatusCode(ResponseStatusCode.OK);
+				break;
+				
+			case GET_STATE_HOLD:
+				// Shall not get there...
+				throw new BadRequestException();
+
+			case GET_STATE_HOLD_DIRECT:
+				content = SampleController.getFormattedClickButtonHold(clickButtonID);
 				response.setContent(content);
 				request.setReturnContentType(MimeMediaType.OBIX);
 				response.setResponseStatusCode(ResponseStatusCode.OK);

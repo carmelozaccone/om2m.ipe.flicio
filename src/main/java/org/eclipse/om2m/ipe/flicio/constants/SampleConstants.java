@@ -25,16 +25,77 @@ public class SampleConstants {
 	
 	private SampleConstants(){}
 	
-	public static final String POA = "Flio.io sample";
-	public static final String DATA = "DATA";
-	public static final String DESC = "DESCRIPTOR";
-	public static final String AE_NAME = "AE_IPE_SAMPLE";
-	public static final String LAMP_0 = "LAMP_0";
-	public static final String LAMP_1 = "LAMP_1";
-	public static final String QUERY_STRING_OP = "op";
-	public static final String QUERY_STRING_LAMP_ID = "lampid";
-	public static final boolean GUI = Boolean.valueOf(System.getProperty("org.eclipse.om2m.ipe.flicio.gui", "true"));
+	public static final String POA = "Flic.io sample";
+	public static final String FLIC_DEAMON_HOST = "localhost";
+	public static enum BUTTON_FEATURE {
+		DATA_POSITION("DATA_POSITION"), 
+		DATA_PEERING("DATA_PEERING"), 
+		DATA_CLICK("DATA_CLICK"), 
+		DATA_DOUBLECLICK("DATA_DOUBLECLICK"), 
+		DATA_HOLD("DATA_HOLD");
+		private final String value;
+		
+		private BUTTON_FEATURE(final String value){
+			this.value = value;
+		}
+		
+		public String toString() {
+			return value;
+		}
+	};
+
+	public static enum ButtonPosition {
+		buttondown("ButtonIsDown"), 
+		buttonup("ButtonIsUp");
+		private final String value;
+		
+		private ButtonPosition(final String value){
+			this.value = value;
+		}
+		
+		public String toString() {
+			return value;
+		}	
+	};
+	public static enum ButtonPeering {
+		buttonpublic("ButtonIsPublic"), 
+		buttonprivate("ButtonIsPrivate");
+		private final String value;
+		
+		private ButtonPeering(final String value){
+			this.value = value;
+		}
+		
+		public String toString() {
+			return value;
+		}	
+	};
+
+	public static final String UNKNOW= "unknow";
 	
+	public static final String DESC = "DESCRIPTOR";
+	public static final String AE_NAME = "AE_FLIC.IO_IPE";
+	public static final String CONTAINER_NAME = "ClickButton";
+
+	public static enum DATA_QUERY_STRING { 
+		op("op"),
+		clickbuttonid("clickbuttonid"),
+		position("position"),
+		peering("peering"),
+		click("click"),
+		doubleclick("doubleclick"),
+		hold("hold");
+		private final String value;
+		
+		private DATA_QUERY_STRING(final String value){
+			this.value = value;
+		}
+		
+		public String toString() {
+			return value;
+		}
+	};	
+		
 	public static String CSE_ID = "/" + Constants.CSE_ID;
 	public static String CSE_PREFIX = CSE_ID + "/" + Constants.CSE_NAME;
 }

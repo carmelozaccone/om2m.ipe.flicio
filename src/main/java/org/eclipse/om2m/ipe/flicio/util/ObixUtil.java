@@ -19,116 +19,325 @@
  *******************************************************************************/
 package org.eclipse.om2m.ipe.flicio.util;
 
+import java.time.Duration;
+
 import org.eclipse.om2m.commons.constants.Constants;
 import org.eclipse.om2m.commons.constants.ShortName;
+import org.eclipse.om2m.commons.obix.Abstime;
 import org.eclipse.om2m.commons.obix.Bool;
 import org.eclipse.om2m.commons.obix.Contract;
+import org.eclipse.om2m.commons.obix.List;
 import org.eclipse.om2m.commons.obix.Obj;
 import org.eclipse.om2m.commons.obix.Op;
+import org.eclipse.om2m.commons.obix.Reltime;
 import org.eclipse.om2m.commons.obix.Str;
+import org.eclipse.om2m.commons.obix.Time;
 import org.eclipse.om2m.commons.obix.Uri;
 import org.eclipse.om2m.commons.obix.io.ObixEncoder;
 import org.eclipse.om2m.ipe.flicio.constants.Operations;
 import org.eclipse.om2m.ipe.flicio.constants.SampleConstants;
-import org.eclipse.om2m.ipe.flicio.model.Lamp;
+import org.eclipse.om2m.ipe.flicio.constants.SampleConstants.BUTTON_FEATURE;
+import org.eclipse.om2m.ipe.flicio.constants.SampleConstants.ButtonPeering;
+import org.eclipse.om2m.ipe.flicio.constants.SampleConstants.ButtonPosition;
+import org.eclipse.om2m.ipe.flicio.constants.SampleConstants.DATA_QUERY_STRING;
+import org.eclipse.om2m.ipe.flicio.model.Click;
+import org.eclipse.om2m.ipe.flicio.model.ClickButton;
+import org.eclipse.om2m.ipe.flicio.model.DoubleClick;
 
 public class ObixUtil {
 	
 	/**
-	 * Returns an obix XML representation describing the lamp.
+	 * Returns an obix XML representation describing the click button.
 	 * @param cseId - SclBase id
 	 * @param appId - Application Id
-	 * @param stateCont - the STATE container id
+	 * @parem ClickButtonID - the ClickButton ID
 	 * @return Obix XML representation
 	 */
-	public static String getDescriptorRep(String cseId, String appId, String stateCont) {
+	public static String getDescriptorRep(String cseId, String appId, String clickButtonID) {
 		String prefix = cseId+"/"+ Constants.CSE_NAME + "/" + appId;
 		// oBIX
 		Obj obj = new Obj();
-		obj.add(new Str("type",Lamp.TYPE));
-		obj.add(new Str("location",Lamp.LOCATION));
+		obj.add(new Str("type",ClickButton.TYPE));
+		obj.add(new Str("location",ClickButton.LOCATION));
 		obj.add(new Str("appId",appId));
-		// OP GetState from SCL DataBase
-		Op opState = new Op();
-		opState.setName("getState");
-		opState.setHref(new Uri(prefix  +"/"+stateCont+"/"+ ShortName.LATEST));
-		opState.setIs(new Contract("retrieve"));
-		opState.setIn(new Contract("obix:Nil"));
-		opState.setOut(new Contract("obix:Nil"));
-		obj.add(opState);
-		// OP GetState from SCL IPU
-		Op opStateDirect = new Op();
-		opStateDirect.setName("getState(Direct)");
-		opStateDirect.setHref(new Uri(prefix + "?op="+ Operations.GET_STATE_DIRECT+"&lampid=" + appId));
-		opStateDirect.setIs(new Contract("execute"));
-		opStateDirect.setIn(new Contract("obix:Nil"));
-		opStateDirect.setOut(new Contract("obix:Nil"));
-		obj.add(opStateDirect);
-		// OP SwitchON
-		Op opON = new Op();
-		opON.setName("switchON");
-		opON.setHref(new Uri(prefix + "?op="+ Operations.SET_ON +"&lampid=" + appId));
-		opON.setIs(new Contract("execute"));
-		opON.setIn(new Contract("obix:Nil"));
-		opON.setOut(new Contract("obix:Nil"));
-		obj.add(opON);
-		// OP SwitchOFF
-		Op opOFF = new Op();
-		opOFF.setName("switchOFF");
-		opOFF.setHref(new Uri(prefix  + "?op=" + Operations.SET_OFF + "&lampid=" + appId));
-		opOFF.setIs(new Contract("execute"));
-		opOFF.setIn(new Contract("obix:Nil"));
-		opOFF.setOut(new Contract("obix:Nil"));
-		obj.add(opOFF);
-		// OP Toggle
-		Op opToggle = new Op();
-		opToggle.setName("toggle");
-		opToggle.setHref(new Uri(prefix + "?op="+ Operations.TOGGLE +"&lampid=" + appId));
-		opToggle.setIs(new Contract("execute"));
-		opToggle.setIn(new Contract("obix:Nil"));
-		opToggle.setOut(new Contract("obix:Nil"));
-		obj.add(opToggle);
+		
+		// OP GetStatePosition from SCL DataBase
+		Op opStatePosition = new Op();
+		opStatePosition.setName("getStatePosition");
+		opStatePosition.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_POSITION+"/"+ ShortName.LATEST));
+		opStatePosition.setIs(new Contract("retrieve"));
+		opStatePosition.setIn(new Contract("obix:Nil"));
+		opStatePosition.setOut(new Contract("obix:Nil"));
+		obj.add(opStatePosition);
+		
+		// OP GetStatePosition from SCL IPU
+		Op opStatePositionDirect = new Op();
+		opStatePositionDirect.setName("getStatePosition(Direct)");
+		opStatePositionDirect.setHref(new Uri(prefix + "?"+DATA_QUERY_STRING.op+"="+ Operations.GET_STATE_POSITION_DIRECT +"&"+DATA_QUERY_STRING.clickbuttonid+"=" + clickButtonID));
+		opStatePositionDirect.setIs(new Contract("execute"));
+		opStatePositionDirect.setIn(new Contract("obix:Nil"));
+		opStatePositionDirect.setOut(new Contract("obix:Nil"));
+		obj.add(opStatePositionDirect);
+				
+		// OP GetStatePeering from SCL DataBase
+		Op opStatePeering = new Op();
+		opStatePeering.setName("getStatePeering");
+		opStatePeering.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_PEERING+"/"+ ShortName.LATEST));
+		opStatePeering.setIs(new Contract("retrieve"));
+		opStatePeering.setIn(new Contract("obix:Nil"));
+		opStatePeering.setOut(new Contract("obix:Nil"));
+		obj.add(opStatePeering);
+
+		// OP GetStatePeering from SCL IPU
+		Op opStateDownPeering = new Op();
+		opStateDownPeering.setName("getStatePeering(Direct)");
+		opStateDownPeering.setHref(new Uri(prefix + "?"+DATA_QUERY_STRING.op+"="+ Operations.GET_STATE_PEERING_DIRECT +"&"+DATA_QUERY_STRING.clickbuttonid+"=" + clickButtonID));
+		opStateDownPeering.setIs(new Contract("execute"));
+		opStateDownPeering.setIn(new Contract("obix:Nil"));
+		opStateDownPeering.setOut(new Contract("obix:Nil"));
+		obj.add(opStateDownPeering);
+
+		// OP GetStateClick from SCL DataBase
+		Op opStateClick = new Op();
+		opStateClick.setName("getStateClick");
+		opStateClick.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_CLICK+"/"+ ShortName.LATEST));
+		opStateClick.setIs(new Contract("retrieve"));
+		opStateClick.setIn(new Contract("obix:Nil"));
+		opStateClick.setOut(new Contract("obix:Nil"));
+		obj.add(opStateClick);
+		
+		
+		// OP GetStateClick from SCL IPU
+		Op opStateClickDirect = new Op();
+		opStateClickDirect.setName("getStateClick(Direct)");
+		opStateClickDirect.setHref(new Uri(prefix + "?"+DATA_QUERY_STRING.op+"="+ Operations.GET_STATE_CLICK_DIRECT+"&"+DATA_QUERY_STRING.clickbuttonid+"=" + clickButtonID));
+		opStateClickDirect.setIs(new Contract("execute"));
+		opStateClickDirect.setIn(new Contract("obix:Nil"));
+		opStateClickDirect.setOut(new Contract("obix:Nil"));
+		obj.add(opStateClickDirect);
+
+		// OP GetStateDoubleClick from SCL DataBase
+		Op opStateDoubleClick = new Op();
+		opStateDoubleClick.setName("getStateDoubleClick");
+		opStateDoubleClick.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_DOUBLECLICK+"/"+ ShortName.LATEST));
+		opStateDoubleClick.setIs(new Contract("retrieve"));
+		opStateDoubleClick.setIn(new Contract("obix:Nil"));
+		opStateDoubleClick.setOut(new Contract("obix:Nil"));
+		obj.add(opStateDoubleClick);
+		
+		// OP GetStateDoubleClick from SCL IPU
+		Op opStateDoubleClickDirect = new Op();
+		opStateDoubleClickDirect.setName("getStateDoubleClick(Direct)");
+		opStateDoubleClickDirect.setHref(new Uri(prefix + "?"+DATA_QUERY_STRING.op+"="+ Operations.GET_STATE_DOUBLECLICK_DIRECT +"&"+DATA_QUERY_STRING.clickbuttonid+"=" + clickButtonID));
+		opStateDoubleClickDirect.setIs(new Contract("execute"));
+		opStateDoubleClickDirect.setIn(new Contract("obix:Nil"));
+		opStateDoubleClickDirect.setOut(new Contract("obix:Nil"));
+		obj.add(opStateDoubleClickDirect);
+		
+		// OP GetStateHold from SCL DataBase
+		Op opStateHold = new Op();
+		opStateHold.setName("getStateHold");
+		opStateHold.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_HOLD+"/"+ ShortName.LATEST));
+		opStateHold.setIs(new Contract("retrieve"));
+		opStateHold.setIn(new Contract("obix:Nil"));
+		opStateHold.setOut(new Contract("obix:Nil"));
+		obj.add(opStateHold);
+		
+		// OP GetStateHold from SCL IPU
+		Op opStateHoldDirect = new Op();
+		opStateHoldDirect.setName("getStateHold(Direct)");
+		opStateHoldDirect.setHref(new Uri(prefix + "?"+DATA_QUERY_STRING.op+"="+ Operations.GET_STATE_HOLD_DIRECT +"&"+DATA_QUERY_STRING.clickbuttonid+"=" + clickButtonID));
+		opStateHoldDirect.setIs(new Contract("execute"));
+		opStateHoldDirect.setIn(new Contract("obix:Nil"));
+		opStateHoldDirect.setOut(new Contract("obix:Nil"));
+		obj.add(opStateHoldDirect);
 
 		return ObixEncoder.toString(obj);
 	}
 
 	/**
-	 * Returns an obix XML representation describing the current state.
-	 * @param lampId - Application Id
-	 * @param value - current lamp state
+	 * Returns an obix XML representation describing the state of the ClickButton oneM2M resource
+	 * @param clickButtonID - oneM2M Application ID
+	 * @param buttonPosition - the click button Position
+	 * @param buttonPeering - the click button Peering
 	 * @return Obix XML representation
 	 */
-	public static String getStateRep(String lampId, boolean value) {
+	public static String getStateRep(String clickButtonID, ButtonPosition buttonPosition, ButtonPeering buttonPeering) {
 		// oBIX
 		Obj obj = new Obj();
-		obj.add(new Str("type",Lamp.TYPE));
-		obj.add(new Str("location",Lamp.LOCATION));
-		obj.add(new Str("lampId",lampId));
-		obj.add(new Bool("state",value));
+		obj.add(new Str("type",ClickButton.TYPE));
+		obj.add(new Str("location",ClickButton.LOCATION));
+		obj.add(new Str("clickbuttonid",clickButtonID));
+		if (buttonPosition!=null) {
+			obj.add(new Str(BUTTON_FEATURE.DATA_POSITION.toString(), buttonPosition.toString()));
+		} else {
+			obj.add(new Str(BUTTON_FEATURE.DATA_POSITION.toString(), SampleConstants.UNKNOW));		
+		}
+		if (buttonPeering!=null) {
+			obj.add(new Str(BUTTON_FEATURE.DATA_PEERING.toString(), buttonPeering.toString()));		
+		} else {
+			obj.add(new Str(BUTTON_FEATURE.DATA_PEERING.toString(), SampleConstants.UNKNOW));					
+		}
 		return ObixEncoder.toString(obj);
 	}
-
-	public static String createLampAllDescriptor(){
-		String prefix = SampleConstants.CSE_ID +"/"+ Constants.CSE_NAME + "/" + "LAMP_ALL";
-		Obj descriptor = new Obj();
-		Op opSwitchOn = new Op();
-		opSwitchOn.setName(Operations.SET_ON.toString());
-		opSwitchOn.setHref(prefix + "?op="+ Operations.ALL_ON);
-		opSwitchOn.setIs(new Contract("execute"));
-		descriptor.add(opSwitchOn);
-
-		Op opSwitchOff = new Op();
-		opSwitchOff.setName(Operations.SET_OFF.toString());
-		opSwitchOff.setHref(prefix + "?op=" + Operations.ALL_OFF);
-		opSwitchOff.setIs(new Contract("execute"));
-		descriptor.add(opSwitchOff);
-
-		Op opToggleAll = new Op();
-		opToggleAll.setName(Operations.ALL_TOGGLE.toString());
-		opToggleAll.setHref(prefix + "?op=" + Operations.ALL_TOGGLE);
-		opToggleAll.setIs(new Contract("execute"));
-		descriptor.add(opToggleAll);
-		return ObixEncoder.toString(descriptor);
+	
+	/**
+	 * Returns an obix XML representation describing the Position state of the ClickButton oneM2M resource
+	 * @param clickButtonID - oneM2M Application ID
+	 * @param buttonPosition - the click button Position
+	 * @return Obix XML representation
+	 */
+	public static String getStateRep(String clickButtonID, ButtonPosition buttonPosition) {
+		// oBIX
+		Obj obj = new Obj();
+		obj.add(new Str("type",ClickButton.TYPE));
+		obj.add(new Str("location",ClickButton.LOCATION));
+		obj.add(new Str("clickbuttonid",clickButtonID));
+		if (buttonPosition!=null) {
+			obj.add(new Str(BUTTON_FEATURE.DATA_POSITION.toString(), buttonPosition.toString()));
+		} else {
+			obj.add(new Str(BUTTON_FEATURE.DATA_POSITION.toString(), SampleConstants.UNKNOW));		
+		}
+		return ObixEncoder.toString(obj);
 	}
 	
+	/**
+	 * Returns an obix XML representation describing the BLE Peering state of the ClickButton oneM2M resource
+	 * @param clickButtonID - oneM2M Application ID
+	 * @param buttonPeering - the click button BLE Peering
+	 * @return Obix XML representation
+	 */
+	public static String getStateRep(String clickButtonID, ButtonPeering buttonPeering) {
+		// oBIX
+		Obj obj = new Obj();
+		obj.add(new Str("type",ClickButton.TYPE));
+		obj.add(new Str("location",ClickButton.LOCATION));
+		obj.add(new Str("clickbuttonid",clickButtonID));
+		if (buttonPeering!=null) {
+			obj.add(new Str(BUTTON_FEATURE.DATA_PEERING.toString(), buttonPeering.toString()));		
+		} else {
+			obj.add(new Str(BUTTON_FEATURE.DATA_PEERING.toString(), SampleConstants.UNKNOW));					
+		}
+		return ObixEncoder.toString(obj);
+	}
+	
+	/**
+	 * Returns an obix XML representation describing the Click state of the ClickButton oneM2M resource
+	 * @param clickButtonID - oneM2M Application ID
+	 * @param buttonClick - current click 
+	 * @return Obix XML representation
+	 */
+	public static String getStateRep(String clickButtonID, Click buttonClick) {
+		// oBIX
+		Obj obj = new Obj();
+		obj.setName("clickbutton");
+		obj.add(new Str("type",ClickButton.TYPE));
+		obj.add(new Str("location",ClickButton.LOCATION));
+		obj.add(new Str("clickbuttonid",clickButtonID));
+		
+		//list to hold click details
+		List list = new List();
+		list.setName("click");
+				
+		Abstime abst = new Abstime();
+		abst.setName("clicktimestamp");
+		//set the click timestamp
+		abst.setVal(buttonClick.getClickInstant().toString());
+		
+		Reltime relt = new Reltime();
+		relt.setName("clickduration");
+		//set the click duration
+		//TBD HOW TO create the obix Realtime
+//		relt.setIs(buttonClick.getClickHold().toString());
+		
+		list.add(abst);
+		list.add(relt);
+			
+		obj.add(list);
+		
+		return ObixEncoder.toString(obj);
+	}
+	
+	/**
+	 * Returns an obix XML representation describing the DoubleClick state of the ClickButton oneM2M resource
+	 * @param clickButtonID - oneM2M Application ID	 
+	 * @param buttonDoubleClick - current doubleclick
+	 * @return Obix XML representation
+	 */
+	public static String getStateRep(String clickButtonID, DoubleClick buttonDoubleClick) {
+		// oBIX
+		Obj obj = new Obj();
+		obj.setName("clickbutton");
+		obj.add(new Str("type",ClickButton.TYPE));
+		obj.add(new Str("location",ClickButton.LOCATION));
+		obj.add(new Str("clickbuttonid",clickButtonID));
+		
+		//list to hold doubleclick details
+		List list = new List();
+		list.setName("doubleclick");
+		
+		Abstime abst1 = new Abstime();
+		abst1.setName("click1timestamp");
+		//set the 1st click timestamp
+		buttonDoubleClick.getClickInstant1();
+		abst1.setVal(buttonDoubleClick.getClickInstant1().toString());
+		
+		Reltime relt1 = new Reltime();
+		relt1.setName("click1duration");
+		//set the 1st click duration
+		//TBD HOW TO create the obix Realtime
+//		relt1.setIs(buttonDoubleClick.getClickHold1().toString());
+		
+		list.add(abst1);
+		list.add(relt1);
+
+		Reltime relt3 = new Reltime();
+		relt3.setName("interclicksduration");
+		//set the inter clicks duration
+		//TBD HOW TO create the obix Realtime
+//		relt1.setIs(buttonDoubleClick.getInterClicksHold());
+		
+		list.add(relt3);
+		
+		Abstime abst2 = new Abstime();
+		abst2.setName("click2timestamp");
+		//set the 2nd click timestamp
+		abst2.setVal(buttonDoubleClick.getClickInstant2().toString());
+		
+		Reltime relt2 = new Reltime();
+		relt2.setName("click2duration");
+		//set the 1st click duration
+		//TBD HOW TO create the obix Realtime
+//		relt2.setIs(buttonDoubleClick.getClickHold2().toString());
+		
+		list.add(abst2);
+		list.add(relt2);
+		
+		obj.add(list);	
+		return ObixEncoder.toString(obj);
+	}
+	
+	/**
+	 * Returns an obix XML representation describing the hold time state of the ClickButton oneM2M resource
+	 * @param clickButtonID - oneM2M Application ID
+	 * @param buttonClick - current click 
+	 * @return Obix XML representation
+	 */
+	public static String getStateRep(String clickButtonID, Duration buttonHoldDuration) {
+		// oBIX
+		Obj obj = new Obj();
+		obj.setName("clickbutton");
+		obj.add(new Str("type",ClickButton.TYPE));
+		obj.add(new Str("location",ClickButton.LOCATION));
+		obj.add(new Str("clickbuttonid",clickButtonID));
+				
+		Reltime relt = new Reltime();
+		relt.setName("singleclickduration");
+		//set the button hold duration
+		//TBD HOW TO create the obix Realtime
+//		relt.setIs(buttonHoldDuration.toString());
+		obj.add(relt);
+		
+		return ObixEncoder.toString(obj);
+	}
 }

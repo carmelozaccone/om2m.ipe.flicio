@@ -31,31 +31,29 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
-import io.flic.fliclib.sample.TestClient;
-
 /**
  *  Manages the starting and stopping of the bundle.
  */
 public class Activator implements BundleActivator {
     /** Logger */
-    private static Log logger = LogFactory.getLog(Activator.class);
+    private static Log lOGGER = LogFactory.getLog(Activator.class);
     /** SCL service tracker */
     private ServiceTracker<Object, Object> cseServiceTracker;
 
     
     @Override
     public void start(BundleContext bundleContext) throws Exception {
-        logger.info("Register Flic.io IPEService..");
+        lOGGER.info("Register Flic.io IPE service..");
         bundleContext.registerService(InterworkingService.class.getName(), new SampleRouter(), null);
-        logger.info("IPEService is registered.");
+        lOGGER.info("Flic.io IPE service is registered.");
 
         cseServiceTracker = new ServiceTracker<Object, Object>(bundleContext, CseService.class.getName(), null) {
             public void removedService(ServiceReference<Object> reference, Object service) {
-                logger.info("CseService removed");
+                lOGGER.info("CSE service removed");
             }
 
             public Object addingService(ServiceReference<Object> reference) {
-                logger.info("CseService discovered");
+                lOGGER.info("CSE service discovered");
                 CseService cseService = (CseService) this.context.getService(reference);
                 SampleController.setCse(cseService);
                 new Thread(){
@@ -64,7 +62,7 @@ public class Activator implements BundleActivator {
                         	LifeCycleManager.start();
                  
                         } catch (Exception e) {
-                            logger.error("IPEMonitor Flic.io IPE Sample error", e);
+                            lOGGER.error("IPE Monitor Flic.io IPE Sample error", e);
                         }
                     }
                 }.start();
@@ -76,11 +74,11 @@ public class Activator implements BundleActivator {
 
     @Override
     public void stop(BundleContext bundleContext) throws Exception {
-        logger.info("Stop Flio.io IPE Sample");
+        lOGGER.info("Stop Flic.io IPE Sample");
         try {
         	LifeCycleManager.stop();
         } catch (Exception e) {
-            logger.error("Stop Flic.io IPE Sample error", e);
+            lOGGER.error("Stop Flic.io IPE Sample error", e);
         }
     }
 
