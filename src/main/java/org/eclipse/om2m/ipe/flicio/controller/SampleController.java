@@ -614,8 +614,8 @@ public class SampleController {
 	 * @param FlicDeamon - the FlicDeamon reachability information
 	 */
 	private static void createFlicDeamonResources(FlicDeamon flicDeamonHost){
-		String appID =  createAppID(flicDeamonHost); 
-		String poa = SampleConstants.POA;
+		String appID =  SampleConstants.MN_AE_PREFIX+"_"+createAppID(flicDeamonHost); 
+		String poa = SampleConstants.POA+"-"+FlicDeamon.TYPE;
 		LOGGER.info("***Creating oneM2M ressources for Flic.io network deamon under appID ["+appID+"] & poa ["+poa+"]");
 
 		// Create the Application resource
@@ -623,6 +623,7 @@ public class SampleController {
 		ae.setRequestReachability(true);
 		ae.getPointOfAccess().add(poa);
 		ae.setAppID(appID);
+		ae.setAppName(poa);
 		
 		ResponsePrimitive response = RequestSender.createAE(ae, appID);
 		BigInteger statusCode;
@@ -631,12 +632,14 @@ public class SampleController {
 		if(response.getResponseStatusCode().equals(ResponseStatusCode.CREATED)) {
 			LOGGER.info("oneM2M Application Entity for the Flic.io network deamon created under appID ["+appID+"] & poa ["+poa+"]");
 			Container container = new Container();
+			container.setName(SampleConstants.CONTAINER_NAME_FLICDEAMON);
 			container.getLabels().add(SampleConstants.CONTAINER_NAME_FLICDEAMON);
 			container.setMaxNrOfInstances(BigInteger.valueOf(1));
 			
 			ResponsePrimitive containerResponse = null;
 			// Create DESCRIPTOR container sub-resource
-			containerResponse =  RequestSender.createContainer(response.getLocation(), SampleConstants.DESC, container);
+			containerResponse =  RequestSender.createContainer(response.getLocation(), SampleConstants.CONTAINER_NAME_FLICDEAMON, container);
+			
 			statusCode = containerResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
 				LOGGER.info("oneM2M DESCRIPTOR Container for the Flic.io network deamon created under appID ["+appID+"] & poa ["+poa+"]");
@@ -657,17 +660,16 @@ public class SampleController {
 			
 			contentInstance.setContent(content);
 			contentInstance.setContentInfo(MimeMediaType.OBIX + ":" + MimeMediaType.ENCOD_PLAIN);
-			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + SampleConstants.DESC;
-//			containerContentResponse = RequestSender.createContentInstance(target,null, contentInstance);
+			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + SampleConstants.CONTAINER_NAME_FLICDEAMON;
 			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_DESCRIPTOR.toString(), contentInstance);
 		
 			statusCode = containerContentResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
-				LOGGER.info("oneM2M DESCRIPTION content instance for the Flic.io network deamon created under resource ["+target+"]");
+				LOGGER.info("oneM2M DESCRIPTOR content instance for the Flic.io network deamon created under resource ["+target+"]");
 				LOGGER.debug("===\n"+content+"\n===");
 				LOGGER.info(containerContentResponse);
 			} else {
-				LOGGER.error("oneM2M DESCRIPTION content instance for the Flic.io network deamon can't be created under resource ["+target+"]");
+				LOGGER.error("oneM2M DESCRIPTOR content instance for the Flic.io network deamon can't be created under resource ["+target+"]");
 				LOGGER.debug("===\n"+content+"\n===");
 				LOGGER.error(containerContentResponse);		
 				throw new BadRequestException("oneM2M DESCRIPTION content instance for the Flic.io network deamon can't be created under resource ["+target+"]");
@@ -685,8 +687,8 @@ public class SampleController {
 	 * @param buttonPeering - current click button peering status
 	 */
 	private static void createClickButtonResources(String clickButtonID, ButtonPosition buttonPosition, ButtonPeering buttonPeering) throws BadRequestException {
-		String appID =  createAppID(clickButtonID); 
-		String poa = SampleConstants.POA;
+		String appID =  SampleConstants.MN_AE_PREFIX+"_"+createAppID(clickButtonID); 
+		String poa = SampleConstants.POA+"-"+ClickButton.TYPE;
 		LOGGER.info("***Creating oneM2M ressources for clickButton under appID ["+appID+"] & poa ["+poa+"]");
 
 		// Create the Application resource
@@ -694,6 +696,7 @@ public class SampleController {
 		ae.setRequestReachability(true);
 		ae.getPointOfAccess().add(poa);
 		ae.setAppID(appID);
+		ae.setAppName(poa);
 		
 		ResponsePrimitive response = RequestSender.createAE(ae, appID);
 		BigInteger statusCode;
@@ -707,7 +710,8 @@ public class SampleController {
 			
 			ResponsePrimitive containerResponse = null;
 			// Create DESCRIPTOR container sub-resource
-			containerResponse =  RequestSender.createContainer(response.getLocation(), SampleConstants.DESC, container);
+			container.setName(SampleConstants.CONTAINER_NAME_CLICKBUTTON);
+			containerResponse =  RequestSender.createContainer(response.getLocation(), SampleConstants.CONTAINER_NAME_CLICKBUTTON, container);
 			statusCode = containerResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
 				LOGGER.info("oneM2M DESCRIPTOR Container for the clickButton created under appID ["+appID+"] & poa ["+poa+"]");
@@ -719,6 +723,7 @@ public class SampleController {
 			}
 			
 			// Create Position STATE container sub-resource
+			container.setName(BUTTON_FEATURE.DATA_POSITION.toString());
 			containerResponse =  RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_POSITION.toString(), container);
 			statusCode = containerResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
@@ -731,6 +736,7 @@ public class SampleController {
 			}
 			
 			// Create BLE Peering STATE container sub-resource
+			container.setName(BUTTON_FEATURE.DATA_PEERING.toString());
 			containerResponse =  RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_PEERING.toString(), container);
 			statusCode = containerResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
@@ -743,6 +749,7 @@ public class SampleController {
 			}
 			
 			// Create Click STATE container sub-resource
+			container.setName(BUTTON_FEATURE.DATA_CLICK.toString());
 			containerResponse =  RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_CLICK.toString(), container);
 			statusCode = containerResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
@@ -755,6 +762,7 @@ public class SampleController {
 			}
 			
 			// Create Double Click STATE container sub-resource
+			container.setName(BUTTON_FEATURE.DATA_DOUBLECLICK.toString());
 			containerResponse = RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_DOUBLECLICK.toString(), container);
 			statusCode = containerResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
@@ -767,6 +775,7 @@ public class SampleController {
 			}
 			
 			// Create Hold STATE container sub-resource
+			container.setName(BUTTON_FEATURE.DATA_HOLD.toString());
 			containerResponse = RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_HOLD.toString(), container);
 			statusCode = containerResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
@@ -790,10 +799,9 @@ public class SampleController {
 			
 			contentInstance.setContent(content);
 			contentInstance.setContentInfo(MimeMediaType.OBIX + ":" + MimeMediaType.ENCOD_PLAIN);
-			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + SampleConstants.DESC;
-//			containerContentResponse = RequestSender.createContentInstance(target,null, contentInstance);
-			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_DESCRIPTOR.toString(), contentInstance);
-		
+			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + SampleConstants.CONTAINER_NAME_CLICKBUTTON;
+			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_DESCRIPTOR.toString(), contentInstance);			
+			
 			statusCode = containerContentResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
 				LOGGER.info("oneM2M DESCRIPTION content instance for the clickButton created under resource ["+target+"]");
@@ -811,7 +819,6 @@ public class SampleController {
 			content = ObixUtil.getStateRep(clickButtonID, buttonPosition);
 			contentInstance.setContent(content);
 			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_POSITION;
-//			containerContentResponse = RequestSender.createContentInstance(target,null, contentInstance);
 			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_POSITION.toString(), contentInstance);
 			
 			statusCode = containerContentResponse.getResponseStatusCode();
@@ -830,7 +837,6 @@ public class SampleController {
 			content = ObixUtil.getStateRep(clickButtonID, buttonPeering);
 			contentInstance.setContent(content);
 			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_PEERING;
-//			containerContentResponse = RequestSender.createContentInstance(target,null, contentInstance);
 			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_PEERING.toString(), contentInstance);
 		
 			statusCode = containerContentResponse.getResponseStatusCode();
@@ -849,7 +855,6 @@ public class SampleController {
 			content = ObixUtil.getStateRep(clickButtonID, new Click());
 			contentInstance.setContent(content);
 			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_CLICK;
-//			containerContentResponse = RequestSender.createContentInstance(target,null, contentInstance);
 			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_CLICK.toString(), contentInstance);
 		
 			statusCode = containerContentResponse.getResponseStatusCode();
@@ -868,7 +873,6 @@ public class SampleController {
 			content = ObixUtil.getStateRep(clickButtonID, new DoubleClick());
 			contentInstance.setContent(content);
 			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_DOUBLECLICK;
-//			containerContentResponse = RequestSender.createContentInstance(target,null, contentInstance);
 			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_DOUBLECLICK.toString(), contentInstance);
 		
 			statusCode = containerContentResponse.getResponseStatusCode();
@@ -887,7 +891,6 @@ public class SampleController {
 			content = ObixUtil.getStateRep(clickButtonID,  Duration.ZERO);
 			contentInstance.setContent(content);
 			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_HOLD;	
-//			containerContentResponse = RequestSender.createContentInstance(target,null, contentInstance);
 			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_HOLD.toString(), contentInstance);
 		
 			statusCode = containerContentResponse.getResponseStatusCode();
@@ -914,7 +917,7 @@ public class SampleController {
 	 */
 	private static boolean removeClickButtonResources(String clickButtonID) throws BadRequestException  {
 		String appID =  createAppID(clickButtonID); 
-		String poa = SampleConstants.POA;
+		String poa = SampleConstants.POA+"-"+ClickButton.TYPE;
 		LOGGER.info("Removing oneM2M ressources for clickButton ["+clickButtonID+"] under appID ["+appID+"] & poa ["+poa+"]");
         boolean result = true;
    

@@ -79,8 +79,9 @@ public class SampleConstants {
 	
 	public static final String DESC = "DESCRIPTOR";
 	public static final String AE_NAME = "AE_FLIC.IO_IPE";
-	public static final String CONTAINER_NAME_CLICKBUTTON = "FLIC.ioClickButton";
-	public static final String CONTAINER_NAME_FLICDEAMON = "FLIC.ioDeamon";
+	public static final String MN_AE_PREFIX = "mnae";
+	public static final String CONTAINER_NAME_CLICKBUTTON = "FLIC.io_ClickButton";
+	public static final String CONTAINER_NAME_FLICDEAMON = "FLIC.io_Deamon";
 
 	public static enum DATA_QUERY_STRING { 
 		op("op"),
