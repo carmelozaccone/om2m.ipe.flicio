@@ -55,7 +55,6 @@ public class SampleRouter implements InterworkingService{
 					//The information response to such requests are obtained from the application memory
 				
 					//Operations on Flic.io Buttons
-
 					case GET_STATE_POSITION_DIRECT:
 					case GET_STATE_PEERING_DIRECT:
 					case GET_STATE_CLICK_DIRECT:	
