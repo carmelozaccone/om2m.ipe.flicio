@@ -20,6 +20,7 @@
 package org.eclipse.om2m.ipe.flicio.controller;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +34,8 @@ import org.eclipse.om2m.ipe.flicio.model.Click;
 import org.eclipse.om2m.ipe.flicio.model.ClickButton;
 import org.eclipse.om2m.ipe.flicio.model.ClickButtonModel;
 import org.eclipse.om2m.ipe.flicio.model.DoubleClick;
+import org.eclipse.om2m.ipe.flicio.model.FlicDeamon;
+
 import io.flic.fliclib.javaclient.Bdaddr;
 import io.flic.fliclib.javaclient.ButtonConnectionChannel;
 import io.flic.fliclib.javaclient.FlicClient;
@@ -50,7 +53,10 @@ public class LifeCycleManager {
 
 	private static Log LOGGER = LogFactory.getLog(LifeCycleManager.class); 
 	private static Map<String, ClickButton> clickButtons;
+	
+	private static FlicDeamon flicDeamonHost;
 	private static FlicClient flicClient = null;
+	
 	private static boolean HANDLE_HOLD_EVENT_onButtonClickOrHold= false;
 	private static boolean HANDLE_HOLD_EVENT_onButtonSingleOrDoubleClickOrHold = !HANDLE_HOLD_EVENT_onButtonClickOrHold;
 	private static boolean HANDLE_CLICK_EVENT= false;
@@ -59,7 +65,55 @@ public class LifeCycleManager {
 	private static boolean HANDLE_DOUBLECLICK_EVENT_onButtonSingleOrDoubleClick= false;
 	private static boolean HANDLE_DOUBLECLICK_EVENT_onButtonSingleOrDoubleClickOrHold = !HANDLE_DOUBLECLICK_EVENT_onButtonSingleOrDoubleClick;
 
+	/*
+	 * Initialise a FlicDeamon Network Host for the FlicCient to connect to
+	 */
+	public static void defineFlicDeamon() {  
+		//default parameter are used
+		flicDeamonHost = new FlicDeamon();
+		//load config from MANIFEST
+		String configFile ="TOBEDONE"; 
+		LOGGER.info("Reading Flic Deamon Network Socket configuration from: ["+configFile+"]");
+		flicDeamonHost.loadConfig();
+	}
 	
+	/*
+	 * Create the FlicClient to the FlicDeamon
+	 * @return FlicCient
+	 */
+	public static FlicClient getFlicClient() {    
+		defineFlicDeamon();
+		LOGGER.info(SampleConstants.AE_NAME+": connecting to Flic.io network Daemon ["+flicDeamonHost+"]");
+		boolean connecting=true;
+		while(connecting)
+		{
+			try {
+				LOGGER.info(SampleConstants.AE_NAME+": trying to connect to Flic.io network Daemon ["+flicDeamonHost+"]");
+				flicClient = new FlicClient(flicDeamonHost.getHostname(),flicDeamonHost.getNetworkPort());
+				LOGGER.info(SampleConstants.AE_NAME+": Connection to Flic.io network Daemon ["+flicDeamonHost+"] succedded");
+				connecting=false;
+			} catch (UnknownHostException e) {
+				LOGGER.error("Flic.io oneM2M IPE can't connect to an unknown host: "+e.toString()+"Please modify the Flic.io network Deamon to connect to");
+				connecting=false;
+				//host is not known so could never connect to it
+				return null;
+			} catch (IOException e) {
+				LOGGER.error("Flic.io oneM2M IPE can't connect to Flic.io network Daemon ["+flicDeamonHost+"]: "+e.toString()+", waiting ["+SampleConstants.FLIC_DEAMON_CONNECTION_RETRY+"] seconds and trying again");
+				//Reconnect to Flic.io Daemon if connection is lost
+		        try
+		        {
+		            Thread.sleep(SampleConstants.FLIC_DEAMON_CONNECTION_RETRY*1000);//in seconds
+		        }
+		        catch(InterruptedException ie){
+		            ie.printStackTrace();
+		        }
+			}
+		}
+		return flicClient;
+	}
+	
+
+
 	/*
 	 * The Flic.io button events handler
 	 * Everytime a button event occur, we operate the required actions:
@@ -91,7 +145,7 @@ public class LifeCycleManager {
          * @throws IOException
          */
         public void onCreateConnectionChannelResponse(ButtonConnectionChannel channel, CreateConnectionChannelError createConnectionChannelError, ConnectionStatus connectionStatus) {
-        	LOGGER.info("Channel [" + channel.getBdaddr() + "] created: " + createConnectionChannelError + ", " + connectionStatus);
+        	LOGGER.info("---onCreateConnectionChannelResponse: Channel [" + channel.getBdaddr() + "] created: " + createConnectionChannelError + ", " + connectionStatus);
         	
         	ClickButton clickButton = SampleController.addClickButton(channel);
             if (clickButton != null) {
@@ -112,7 +166,7 @@ public class LifeCycleManager {
          * @throws IOException
          */
         public void onRemoved(ButtonConnectionChannel channel, RemovedReason removedReason) {
-        	LOGGER.info("Channel [" + channel.getBdaddr() + "] removed: " + removedReason);
+        	LOGGER.info("---onRemoved: Channel [" + channel.getBdaddr() + "] removed: " + removedReason);
             
 	         String clickButtonID = SampleController.removeClickButton(channel);
 	         if (clickButtonID != null) {
@@ -138,7 +192,7 @@ public class LifeCycleManager {
 			 *     TimedOut,
 			 *     BondingKeysMismatch
 			 */     	
-	     	LOGGER.info("----onConnectionStatusChanged: New status for channel [" + channel.getBdaddr() + "]: " + connectionStatus + (connectionStatus == ConnectionStatus.Disconnected ? ", " + disconnectReason : ""));
+	     	LOGGER.info("----onConnectionStatusChanged: New status for BLE channel [" + channel.getBdaddr() + "]: " + connectionStatus + (connectionStatus == ConnectionStatus.Disconnected ? ", " + disconnectReason : ""));
 	 
 	     	String clickButtonID = null;
         	switch (connectionStatus) {
@@ -162,7 +216,7 @@ public class LifeCycleManager {
 	       	         break;
        	         
          		case Disconnected:   
-	               	 // Set BLE peering o public
+	               	 // Set BLE peering to public
 	                 clickButtonID = SampleController.setClickButtonPeering(channel, ButtonPeering.buttonpublic);
 	      	         if (clickButtonID != null) {
 	      	 			LOGGER.info("----onConnectionStatusChanged: BLE channel [" + channel.getBdaddr() + "] is disconnected for the clickButton: ["+clickButtonID+"]");
@@ -180,7 +234,7 @@ public class LifeCycleManager {
         
         @Override
         public void onButtonUpOrDown(ButtonConnectionChannel channel, ClickType clickType, boolean wasQueued, int timeDiff) throws IOException {
-        	LOGGER.info("Position event on channel [" +channel.getBdaddr() + "] " + (clickType == ClickType.ButtonUp ? "Up" : "Down")+ "; was queued "+wasQueued+", time diff: "+timeDiff);
+        	LOGGER.info("----onButtonUpOrDown: Position event on BLE channel [" +channel.getBdaddr() + "] " + (clickType == ClickType.ButtonUp ? "Up" : "Down")+ "; was queued "+wasQueued+", time diff: "+timeDiff);
 
             String clickButtonID;
             switch (clickType) {
@@ -218,7 +272,7 @@ public class LifeCycleManager {
         
         @Override
         public void onButtonClickOrHold(ButtonConnectionChannel channel, ClickType clickType, boolean wasQueued, int timeDiff) throws IOException {
-        	LOGGER.info("Click or Hold event on channel [" +channel.getBdaddr() + "] " + (clickType == ClickType.ButtonClick ? "Click" : "Hold")+ "; was queued "+wasQueued+", time diff: "+timeDiff);
+        	LOGGER.info("----onButtonClickOrHold: Click or Hold event on channel [" +channel.getBdaddr() + "] " + (clickType == ClickType.ButtonClick ? "Click" : "Hold")+ "; was queued "+wasQueued+", time diff: "+timeDiff);
 
             String clickButtonID;
             switch (clickType) {
@@ -269,7 +323,7 @@ public class LifeCycleManager {
 
         @Override
         public void onButtonSingleOrDoubleClick(ButtonConnectionChannel channel, ClickType clickType, boolean wasQueued, int timeDiff) throws IOException {
-        	LOGGER.info("Single/Double click event on channel [" +channel.getBdaddr() + "] " + (clickType == ClickType.ButtonSingleClick ? "SingleClick" : "DoubleClick")+ "; was queued "+wasQueued+", time diff: "+timeDiff);
+        	LOGGER.info("---onButtonSingleOrDoubleClick: Single/Double click event on channel [" +channel.getBdaddr() + "] " + (clickType == ClickType.ButtonSingleClick ? "SingleClick" : "DoubleClick")+ "; was queued "+wasQueued+", time diff: "+timeDiff);
    
             String clickButtonID;
             switch (clickType) {
@@ -317,7 +371,7 @@ public class LifeCycleManager {
 
         @Override
         public void onButtonSingleOrDoubleClickOrHold(ButtonConnectionChannel channel, ClickType clickType, boolean wasQueued, int timeDiff) throws IOException {
-        	LOGGER.info("Single/Double click or hold event on channel [" +channel.getBdaddr() + "] " + (clickType == ClickType.ButtonSingleClick ? "SingleClick" : (clickType == ClickType.ButtonDoubleClick ? "DoubleClick" : "Hold"))+ "; was queued "+wasQueued+", time diff: "+timeDiff);
+        	LOGGER.info("----onButtonSingleOrDoubleClickOrHold: Single/Double click or hold event on channel [" +channel.getBdaddr() + "] " + (clickType == ClickType.ButtonSingleClick ? "SingleClick" : (clickType == ClickType.ButtonDoubleClick ? "DoubleClick" : "Hold"))+ "; was queued "+wasQueued+", time diff: "+timeDiff);
    
             String clickButtonID = null;
             switch (clickType) {
@@ -385,11 +439,22 @@ public class LifeCycleManager {
 	 * Handle the start of the plugin with the resource representation
 	 */
 	public static void start() {
+		LOGGER.info(SampleConstants.AE_NAME+": Starting Flic.io oneM2M IPE");
 		try {
+			// Create Flic.io client to the Flic.io network DEAMON
+			flicClient = getFlicClient();
+			if (flicClient == null) {
+				LOGGER.info(SampleConstants.AE_NAME+": Flic.io network Daemon unavailable");
+				stop();
+			}
+			LOGGER.info(SampleConstants.AE_NAME+": connected to Flic.io network Daemon");
+			
+			//assign the Flic.io clien to the Controller to enable further interactions between IPE administration GUI and Flic.io network Deamon   
+			SampleController.setFlicClient(flicClient,flicDeamonHost);
+			
 			clickButtons = new HashMap<String, ClickButton>();
 			ClickButtonModel.setModel(clickButtons);
-			//Collect configuration values from MANIFEST
-			//TBD
+			
 			
 			//Define in which method handler the Hold Flic.io event should be processed
 			//Selection should be only one to true !!  
@@ -407,11 +472,7 @@ public class LifeCycleManager {
 			//Selection should be only one to true !!  
 			HANDLE_SINGLECLICK_EVENT_onButtonSingleOrDoubleClickOrHold = !HANDLE_SINGLECLICK_EVENT_onButtonSingleOrDoubleClick;
 
-			
-			// Create Flic.io client to the Flic.io network DEAMON
-			flicClient = new FlicClient(SampleConstants.FLIC_DEAMON_HOST);
-			LOGGER.info(SampleConstants.AE_NAME+": connecting to Flic.io network Daemon");
-			
+						
 	        flicClient.getInfo(new GetInfoResponseCallback() {
 	            @Override
 	            public void onGetInfoResponse(BluetoothControllerState bluetoothControllerState, Bdaddr myBdAddr,
@@ -432,32 +493,30 @@ public class LifeCycleManager {
 	            @Override
 	            public void onNewVerifiedButton(Bdaddr bdaddr) throws IOException {
 	            	//  Register the newly peered click button
-	            	LOGGER.info("Another Flic.io client added a new button: " + bdaddr + ". Now connecting to it...");
+	            	LOGGER.info("A Flic.io BUTTON SCANNER added a new button: " + bdaddr + ". Now connecting to it...");
       			
 	                ButtonConnectionChannel buttonConnectionChannel = new ButtonConnectionChannel(bdaddr, buttonCallbacks);
 	                flicClient.addConnectionChannel(buttonConnectionChannel);
 	            }
 	        });
 	        flicClient.handleEvents();
-		} catch (IOException e) {
-			LOGGER.error("Flic.io oneM2M IPE IO error: "+e.toString());
-			//Reconnect to Flic.io Daemon if connection is lost
-			//TBD
-			e.printStackTrace();
-		}
-		catch (Exception e) {
-			LOGGER.error("Flic.io oneM2M IPE error (in opening the client): "+e.toString());
+		}	catch (IOException e) {
+			LOGGER.error("Flic.io oneM2M IPE error while using the client: "+e.toString());
 			e.printStackTrace();
 		}
 	}
 	
 	public static void stop() {
-		LOGGER.info(SampleConstants.AE_NAME+": Disconnecting to Flic.io network Daemon");
-		try {
-			// Ending Flic.io client to the Flic.io network DEAMON
-			flicClient.close();
-		} catch (IOException e) {
-			LOGGER.error("Flic.io oneM2M IPE IO error (in closing client): "+e.toString());
+		LOGGER.info(SampleConstants.AE_NAME+": Stopping Flic.io oneM2M IPE");
+		if (flicClient != null) { 
+			LOGGER.info(SampleConstants.AE_NAME+": Disconnecting to Flic.io network Daemon");
+			try {
+				// Ending Flic.io client to the Flic.io network DEAMON
+				flicClient.close();
+			} catch (IOException e) {
+				LOGGER.error("Flic.io oneM2M IPE IO error while closing the client: "+e.toString());
+			}
 		}
+		LOGGER.info(SampleConstants.AE_NAME+": Flic.io oneM2M IPE stopped");
 	}
 }

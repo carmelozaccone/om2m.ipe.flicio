@@ -26,6 +26,7 @@ import org.eclipse.om2m.commons.exceptions.BadRequestException;
  */
 public enum Operations {
 	
+	//Flic.io Button operations
 	GET_STATE_POSITION("getStatePosition"),
 	GET_STATE_POSITION_DIRECT("getStatePositionDirect"),	
 	GET_STATE_PEERING("getStatePeering"),
@@ -42,7 +43,12 @@ public enum Operations {
 	SET_STATE_PEERING("Peering"),
 	SET_STATE_CLICK("Click-Entity"),
 	SET_STATE_DOUBLECLICK("DoubleClick-Entity"),
-	SET_STATE_HOLD("Hold-Time_BetweenPositions");
+	SET_STATE_HOLD("Hold-Time_BetweenPositions"),
+	
+	//Flic.io BLE deamon operations
+	SET_SCANNER_ON("StartButtonScanMode"),
+	SET_SCANNER_OFF("StopButtonScanMode");
+	
 	
 	private final String value;
 	

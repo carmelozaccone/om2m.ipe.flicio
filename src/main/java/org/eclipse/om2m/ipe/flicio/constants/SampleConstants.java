@@ -25,8 +25,12 @@ public class SampleConstants {
 	
 	private SampleConstants(){}
 	
-	public static final String POA = "Flic.io sample";
+	public static final String POA = "Flic.io_sample";
 	public static final String FLIC_DEAMON_HOST = "localhost";
+	public static final int FLIC_DEAMON_PORT = 5551;
+	//time (in secondà before to retry to connetc to the Flic.io network Deamon if not reachable
+	public static final int FLIC_DEAMON_CONNECTION_RETRY = 60;
+	
 	public static enum BUTTON_FEATURE {
 		DATA_POSITION("DATA_POSITION"), 
 		DATA_PEERING("DATA_PEERING"), 
@@ -75,7 +79,8 @@ public class SampleConstants {
 	
 	public static final String DESC = "DESCRIPTOR";
 	public static final String AE_NAME = "AE_FLIC.IO_IPE";
-	public static final String CONTAINER_NAME = "ClickButton";
+	public static final String CONTAINER_NAME_CLICKBUTTON = "FLIC.ioClickButton";
+	public static final String CONTAINER_NAME_FLICDEAMON = "FLIC.ioDeamon";
 
 	public static enum DATA_QUERY_STRING { 
 		op("op"),

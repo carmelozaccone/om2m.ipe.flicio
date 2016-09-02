@@ -19,8 +19,11 @@
  *******************************************************************************/
 package org.eclipse.om2m.ipe.flicio.controller;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,10 +44,19 @@ import org.eclipse.om2m.ipe.flicio.constants.SampleConstants.ButtonPosition;
 import org.eclipse.om2m.ipe.flicio.model.Click;
 import org.eclipse.om2m.ipe.flicio.model.ClickButton;
 import org.eclipse.om2m.ipe.flicio.model.DoubleClick;
+import org.eclipse.om2m.ipe.flicio.model.FlicDeamon;
 import org.eclipse.om2m.ipe.flicio.model.SampleModel;
 import org.eclipse.om2m.ipe.flicio.util.ObixUtil;
 
+import io.flic.fliclib.javaclient.Bdaddr;
 import io.flic.fliclib.javaclient.ButtonConnectionChannel;
+import io.flic.fliclib.javaclient.ButtonScanner;
+import io.flic.fliclib.javaclient.FlicClient;
+import io.flic.fliclib.javaclient.TimerTask;
+import io.flic.fliclib.javaclient.enums.ConnectionStatus;
+import io.flic.fliclib.javaclient.enums.CreateConnectionChannelError;
+import io.flic.fliclib.javaclient.enums.DisconnectReason;
+import io.flic.fliclib.javaclient.enums.RemovedReason;
 
 /*
  * This object handles the operations to perform when Flic.io button events occurs
@@ -54,12 +66,185 @@ public class SampleController {
 	
 	public static CseService CSE;
 	protected static String AE_ID;
+	
 	private static Log LOGGER= LogFactory.getLog(SampleController.class);
-	private static int counterEventsPosition;
-	private static int counterEventsPeering;
-	private static int counterEventsClick;
-	private static int counterEventsDoubleClick;
-	private static int counterEventsHold;
+	private static Map<String,Integer[]> COUNTEREVENTS = new HashMap<String, Integer[]>();
+	private static int INDEX_counterEventsPosition = 0;
+	private static int INDEX_counterEventsPeering = 1;
+	private static int INDEX_counterEventsClick = 2;
+	private static int INDEX_counterEventsDoubleClick = 3;
+	private static int INDEX_counterEventsHold = 4;
+	
+	private static FlicClient flicClient;	
+	private static ButtonScanner buttonScanner;
+	
+	/*
+	 * Assign the FlicClient to use for the Button Scanning
+	 * @param FlicClient the FlicClient for the BLE Flic.io buttons scanning
+
+	 */
+	public static void setFlicClient(FlicClient flicClient, FlicDeamon flicDeamonHost){
+		SampleController.flicClient = flicClient;
+		createFlicDeamonResources(flicDeamonHost);
+	}
+	
+	/*
+	 * Create the Flic.io Button scanner
+	 */
+	public static ButtonScanner createFlicButtonScanner() {  
+		buttonScanner = new ButtonScanner() {
+            @Override
+            /**
+             * This will be called for every received advertisement packet from a Flic button.
+             *
+             * @param bdaddr Bluetooth address
+             * @param name Advertising name
+             * @param rssi RSSI value in dBm
+             * @param isPrivate The button is private and won't accept new connections from non-bonded clients
+             * @param alreadyVerified The server has already verified this button, which means you can connect to it even if it's private
+             */
+            public void onAdvertisementPacket(final Bdaddr bdaddr, String name, int rssi, boolean isPrivate, boolean alreadyVerified) throws IOException {
+                final ButtonScanner thisButtonScanner = this;
+
+                if (alreadyVerified) {
+                	LOGGER.info("Flic.io button ["+bdaddr+"] is already associated; currrent RSSI signal strenght is ["+rssi+"]");
+                    return;
+                }
+                if (isPrivate) {
+            		LOGGER.info("Discovered Flic.io button ["+bdaddr+"], with currrent RSSI signal strenght of ["+rssi+"], in private mode. Hold it down for 7 seconds to make it public mode.");
+            		
+            		//TBD Send notification to the Web interface which interact with the user !!!
+            		
+                } else {            		
+            		ButtonConnectionChannel.Callbacks buttonCallbacks = new ButtonConnectionChannel.Callbacks() {
+            			
+            		     /**
+            	         * Called when the server has received the create connection channel command.
+            	         *
+            	         * If createConnectionChannelError is {@link CreateConnectionChannelError#NoError}, other events will arrive until {@link #onRemoved} is received.
+            	         * There will be no {@link #onRemoved} if an error occurred.
+            	         *
+            	         * @param channel
+            	         * @param createConnectionChannelError
+            	         * @param connectionStatus
+            	         * @throws IOException
+            	         */
+                        @Override
+                        public void onCreateConnectionChannelResponse(final ButtonConnectionChannel channel, CreateConnectionChannelError createConnectionChannelError, ConnectionStatus connectionStatus) throws IOException {
+                            if (connectionStatus == ConnectionStatus.Ready) {
+                            	LOGGER.info("----onCreateConnectionChannelResponse: BLE Channel ["+channel.getBdaddr()+ "] from Flic.io Button Scanner added successfully a new Flic.io Button !");                           	
+                            } else if (createConnectionChannelError != CreateConnectionChannelError.NoError) {
+                            	LOGGER.error("---onCreateConnectionChannelResponse: BLE Channel [" + channel.getBdaddr() + "] can't be created by Flic.io Button Scanner: " + createConnectionChannelError + ", " + connectionStatus+". Waiting next attempt");
+                            } else {
+                            	LOGGER.info("----onCreateConnectionChannelResponse: BLE Channel ["+channel.getBdaddr()+ "] from Flic.io Button Scanner not yet READY !");
+  /*                          	
+                            	//TB UNDERSTAND WHY THIS TIMERTASK is required as show in the Flic API example??
+                            	flicClient.setTimer(30 * 1000, new TimerTask() {
+                                    @Override
+                                    public void run() throws IOException {
+                                    	//as soon as the Flic.io Button is associated with the Flic.io network deamon, 
+                                    	//we do not need this connection channel to the Button
+                                    	//the Button will be discovered by the GeneralCallbacks thru onNewVerifiedButton 
+                                    	//and a new connection channel for monitoring Button event will be created
+                                    	LOGGER.info("----onCreateConnectionChannelResponse: removing BLE Channel ["+channel.getBdaddr()+ "] from Flic.io Button Scanner after association of a new Flic.io Button !");
+                                    	flicClient.removeConnectionChannel(channel);
+                                    }
+                                });
+  */
+                            }
+                        }
+
+                        /**
+                         * Called when the connection channel has been removed.
+                         *
+                         * Check the removedReason to find out why. From this point, the connection channel can be re-added again if you wish.
+                         *
+                         * @param channel
+                         * @param removedReason
+                         * @throws IOException
+                         */
+                        @Override
+                        public void onRemoved(ButtonConnectionChannel channel, RemovedReason removedReason) throws IOException {
+                        	LOGGER.info("----onRemoved: BLE Channel [" + channel.getBdaddr() + "] removed from Flic.io Button Scanner: "+removedReason);
+                        }
+
+                        /**
+                         * Called when the connection status changes.
+                         *
+                         * @param channel
+                         * @param connectionStatus
+                         * @param disconnectReason Only valid if connectionStatus is {@link ConnectionStatus#Disconnected}
+                         * @throws IOException
+                         */
+                        @Override
+                        public void onConnectionStatusChanged(ButtonConnectionChannel channel, ConnectionStatus connectionStatus, DisconnectReason disconnectReason) throws IOException {
+                            if (connectionStatus == ConnectionStatus.Ready) {
+                            	LOGGER.info("----onConnectionStatusChanged: BLE Channel [" + channel.getBdaddr() + "] from Flic.io Button Scanner added successfully a new Flic.io Button !");
+                            	//as soon as the Flic.io Button is associated with the Flic.io network deamon, 
+                            	//we do not need this connection channel to the Button
+                            	//the Button will be discovered by the GeneralCallbacks thru onNewVerifiedButton 
+                            	//and a new connection channel for monitoring Button event will be created
+                            	LOGGER.info("----onConnectionStatusChanged: removing BLE Channel ["+channel.getBdaddr()+ "] from Flic.io Button Scanner after association of a new Flic.io Button !");
+                            	flicClient.removeConnectionChannel(channel);                  
+                            }
+                        }
+                    };
+            		
+            		ButtonConnectionChannel buttonConnectionChannel = new ButtonConnectionChannel(bdaddr, buttonCallbacks);
+              		LOGGER.info("Discovered new public Flic.io button ["+bdaddr+"], with currrent RSSI signal strenght of ["+rssi+"], now connecting...");
+                    flicClient.addConnectionChannel(buttonConnectionChannel);
+                }
+            }
+        };
+        return buttonScanner;
+	}
+	
+	/*
+	 * Start the Flic.io Button scanner
+	 */
+	public static void startFlicScanner() {  
+		// Start Scanning for new Button(s) on the Flic.io network DEAMON
+		LOGGER.info(SampleConstants.AE_NAME+": Starting Flic.io Button Scanner");
+
+		buttonScanner = createFlicButtonScanner();
+		
+		if (buttonScanner!=null) {
+			try {
+				flicClient.addScanner(buttonScanner);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				LOGGER.error("Flic.io oneM2M IPE IO error: "+e.toString());
+			}
+			LOGGER.info(SampleConstants.AE_NAME+": Flic.io Button Scanner added");
+			LOGGER.info(SampleConstants.AE_NAME+": Flic.io Button Scanner started. Expecting user interaction [pressing the Flic.io button to pair with]");
+		}
+		 else {
+				LOGGER.info(SampleConstants.AE_NAME+": Flic.io Button Scanner unavailable");
+				LOGGER.error(SampleConstants.AE_NAME+": Flic.io Button Scanner was not started");		
+		}
+	}
+
+	
+	/*
+	 * Stop the Flic.io Button scanner
+	 */
+	public static void stopFlicScanner() {  
+		// Stop Scanning for new Button(s) on the Flic.io network DEAMON
+		LOGGER.info(SampleConstants.AE_NAME+": Stopping Flic.io Button Scanner");
+		
+		if (buttonScanner!=null) {
+			try {
+				flicClient.removeScanner(buttonScanner);
+				buttonScanner = null;
+			} catch (IOException e) {
+				LOGGER.error("Flic.io oneM2M IPE IO error: "+e.toString());
+			}
+			LOGGER.info(SampleConstants.AE_NAME+": Flic.io Button Scanner removed");
+			LOGGER.info(SampleConstants.AE_NAME+": Flic.io Button stopped");
+		} else {
+			LOGGER.error(SampleConstants.AE_NAME+": Flic.io Button Scanner was not started");		
+		}
+	}
 	
 	/*
 	 * Create a ClickButton and the oneM2M resources representing the Flic.io button associated with the ButtonConnectionChannel
@@ -76,6 +261,15 @@ public class SampleController {
 			createClickButtonResources(clickButton.getButtonID(), clickButton.getButtonPosition(), clickButton.getButtonPeering());
 			// Set the value in the "real world" model
 			SampleModel.addClickButton(clickButton);	
+			
+			Integer[] counters = new Integer[5];
+			counters[INDEX_counterEventsPosition]=1;
+			counters[INDEX_counterEventsPeering]=1;
+			counters[INDEX_counterEventsClick]=1;
+			counters[INDEX_counterEventsDoubleClick]=1;
+			counters[INDEX_counterEventsHold]=1;
+			COUNTEREVENTS.put(clickButton.getButtonID(), counters);
+			
 			LOGGER.info("ClickButton and oneM2M ressourses created: ["+clickButton.getButtonID()+"]");
 			return clickButton;
         } catch (BadRequestException e) {
@@ -112,6 +306,9 @@ public class SampleController {
 			removeClickButtonResources(clickButtonID);
 			// Remove the resource in the "real world" model
 			SampleModel.removeClickButton(clickButtonID);
+			
+			COUNTEREVENTS.remove(clickButtonID);
+			
 			LOGGER.info("ClickButton and oneM2M ressourses removed: ["+clickButtonID+"]");
 			
 		} catch (BadRequestException e) {
@@ -139,7 +336,9 @@ public class SampleController {
 		cin.setContentInfo(MimeMediaType.OBIX + ":" + MimeMediaType.ENCOD_PLAIN);
 
 //		ResponsePrimitive response = RequestSender.createContentInstance(targetID, null, cin);
-		counterEventsPosition++;	
+		Integer counterevents[] = COUNTEREVENTS.get(clickButtonID);
+		int counterEventsPosition = counterevents[INDEX_counterEventsPosition]++;
+		
 		ResponsePrimitive response = RequestSender.createContentInstance(targetID, Operations.SET_STATE_POSITION.toString()+"_"+counterEventsPosition, cin);
 		BigInteger statusCode = response.getResponseStatusCode();
 		if(statusCode.equals(ResponseStatusCode.OK) | statusCode.equals(ResponseStatusCode.CREATED) | statusCode.equals(ResponseStatusCode.UPDATED)) {
@@ -176,7 +375,9 @@ public class SampleController {
 		cin.setContentInfo(MimeMediaType.OBIX + ":" + MimeMediaType.ENCOD_PLAIN);
 
 //		ResponsePrimitive response = RequestSender.createContentInstance(targetID, null, cin);
-		counterEventsPeering++;
+		Integer counterevents[] = COUNTEREVENTS.get(clickButtonID);
+		int counterEventsPeering = counterevents[INDEX_counterEventsPeering]++;
+
 		ResponsePrimitive response = RequestSender.createContentInstance(targetID, Operations.SET_STATE_PEERING.toString()+"_"+counterEventsPeering, cin);
 		BigInteger statusCode = response.getResponseStatusCode();
 		if(statusCode.equals(ResponseStatusCode.OK) | statusCode.equals(ResponseStatusCode.CREATED) | statusCode.equals(ResponseStatusCode.UPDATED)) {
@@ -212,8 +413,10 @@ public class SampleController {
 		cin.setContent(content);
 		cin.setContentInfo(MimeMediaType.OBIX + ":" + MimeMediaType.ENCOD_PLAIN);
 
-//		ResponsePrimitive response = RequestSender.createContentInstance(targetID, null, cin);
-		counterEventsClick++;
+//		ResponsePrimitive response = RequestSender.createContentInstance(targetID, null, cin);		
+		Integer counterevents[] = COUNTEREVENTS.get(clickButtonID);
+		int counterEventsClick = counterevents[INDEX_counterEventsClick]++;
+
 		ResponsePrimitive response = RequestSender.createContentInstance(targetID, Operations.SET_STATE_CLICK.toString()+"_"+counterEventsClick, cin);
 		BigInteger statusCode = response.getResponseStatusCode();
 		if(statusCode.equals(ResponseStatusCode.OK) | statusCode.equals(ResponseStatusCode.CREATED) | statusCode.equals(ResponseStatusCode.UPDATED)) {
@@ -250,7 +453,9 @@ public class SampleController {
 		cin.setContentInfo(MimeMediaType.OBIX + ":" + MimeMediaType.ENCOD_PLAIN);
 
 //		ResponsePrimitive response = RequestSender.createContentInstance(targetID, null, cin);
-		counterEventsDoubleClick++;	
+		Integer counterevents[] = COUNTEREVENTS.get(clickButtonID);
+		int counterEventsDoubleClick = counterevents[INDEX_counterEventsDoubleClick]++;
+
 		ResponsePrimitive response = RequestSender.createContentInstance(targetID, Operations.SET_STATE_DOUBLECLICK.toString()+"_"+counterEventsDoubleClick, cin);
 		BigInteger statusCode = response.getResponseStatusCode();
 		if(statusCode.equals(ResponseStatusCode.OK) | statusCode.equals(ResponseStatusCode.CREATED) | statusCode.equals(ResponseStatusCode.UPDATED)) {
@@ -287,7 +492,9 @@ public class SampleController {
 		cin.setContentInfo(MimeMediaType.OBIX + ":" + MimeMediaType.ENCOD_PLAIN);
 
 //		ResponsePrimitive response = RequestSender.createContentInstance(targetID, null, cin);
-		counterEventsHold++;
+		Integer counterevents[] = COUNTEREVENTS.get(clickButtonID);
+		int counterEventsHold = counterevents[INDEX_counterEventsHold]++;
+
 		ResponsePrimitive response = RequestSender.createContentInstance(targetID, Operations.SET_STATE_HOLD.toString()+"_"+counterEventsHold, cin);
 		BigInteger statusCode = response.getResponseStatusCode();
 		if(statusCode.equals(ResponseStatusCode.OK) | statusCode.equals(ResponseStatusCode.CREATED) | statusCode.equals(ResponseStatusCode.UPDATED)) {
@@ -348,7 +555,7 @@ public class SampleController {
 	 * return String obix XML representation for the oneM2M click of the ClickButton oneM2M resource 
 	 */	
 	public static String getFormattedClickButtonClick(String clickButtonID){
-		return ObixUtil.getStateRep(clickButtonID, getClickButtonPeering(clickButtonID));
+		return ObixUtil.getStateRep(clickButtonID, getClickButtonClick(clickButtonID));
 	}
 	
 	/*
@@ -404,6 +611,75 @@ public class SampleController {
 	
 	/**
 	 * Creates all (ClickButton + features) required oneM2M resources.
+	 * @param FlicDeamon - the FlicDeamon reachability information
+	 */
+	private static void createFlicDeamonResources(FlicDeamon flicDeamonHost){
+		String appID =  createAppID(flicDeamonHost); 
+		String poa = SampleConstants.POA;
+		LOGGER.info("***Creating oneM2M ressources for Flic.io network deamon under appID ["+appID+"] & poa ["+poa+"]");
+
+		// Create the Application resource
+		AE ae = new AE();
+		ae.setRequestReachability(true);
+		ae.getPointOfAccess().add(poa);
+		ae.setAppID(appID);
+		
+		ResponsePrimitive response = RequestSender.createAE(ae, appID);
+		BigInteger statusCode;
+		
+		// Create Application sub-resources only if application not yet created
+		if(response.getResponseStatusCode().equals(ResponseStatusCode.CREATED)) {
+			LOGGER.info("oneM2M Application Entity for the Flic.io network deamon created under appID ["+appID+"] & poa ["+poa+"]");
+			Container container = new Container();
+			container.getLabels().add(SampleConstants.CONTAINER_NAME_FLICDEAMON);
+			container.setMaxNrOfInstances(BigInteger.valueOf(1));
+			
+			ResponsePrimitive containerResponse = null;
+			// Create DESCRIPTOR container sub-resource
+			containerResponse =  RequestSender.createContainer(response.getLocation(), SampleConstants.DESC, container);
+			statusCode = containerResponse.getResponseStatusCode();
+			if(statusCode.equals(ResponseStatusCode.CREATED)) {
+				LOGGER.info("oneM2M DESCRIPTOR Container for the Flic.io network deamon created under appID ["+appID+"] & poa ["+poa+"]");
+				LOGGER.info(containerResponse);
+			} else {
+				LOGGER.error("oneM2M DESCRIPTOR Container for the Flic.io network deamon can't be created under appID ["+appID+"] & poa ["+poa+"]");
+ 				LOGGER.error(containerResponse);
+				throw new BadRequestException("oneM2M DATA POSITION Container for the Flic.io network deamon can't be created under appID ["+appID+"] & poa ["+poa+"]");
+			}
+						
+			String content;
+			ContentInstance contentInstance = new ContentInstance();
+	
+			ResponsePrimitive containerContentResponse = null;
+			String target = null;
+			// Create DESCRIPTION contentInstance on the DESCRIPTOR container resource
+			content = ObixUtil.getDescriptorRep_FlicDeamon(SampleConstants.CSE_ID, appID, flicDeamonHost.getFlicDeamonID());
+			
+			contentInstance.setContent(content);
+			contentInstance.setContentInfo(MimeMediaType.OBIX + ":" + MimeMediaType.ENCOD_PLAIN);
+			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + SampleConstants.DESC;
+//			containerContentResponse = RequestSender.createContentInstance(target,null, contentInstance);
+			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_DESCRIPTOR.toString(), contentInstance);
+		
+			statusCode = containerContentResponse.getResponseStatusCode();
+			if(statusCode.equals(ResponseStatusCode.CREATED)) {
+				LOGGER.info("oneM2M DESCRIPTION content instance for the Flic.io network deamon created under resource ["+target+"]");
+				LOGGER.debug("===\n"+content+"\n===");
+				LOGGER.info(containerContentResponse);
+			} else {
+				LOGGER.error("oneM2M DESCRIPTION content instance for the Flic.io network deamon can't be created under resource ["+target+"]");
+				LOGGER.debug("===\n"+content+"\n===");
+				LOGGER.error(containerContentResponse);		
+				throw new BadRequestException("oneM2M DESCRIPTION content instance for the Flic.io network deamon can't be created under resource ["+target+"]");
+			}
+				
+		} else {
+			LOGGER.info("oneM2M Application Entity & ressource Container for the Flic.io network deamon were already created under appID ["+appID+"] & poa ["+poa+"]");
+		}	
+	}
+	
+	/**
+	 * Creates all (ClickButton + features) required oneM2M resources.
 	 * @param clickButtonID - the Click Button ID
 	 * @param buttonPosition - current click button position status
 	 * @param buttonPeering - current click button peering status
@@ -414,10 +690,6 @@ public class SampleController {
 		LOGGER.info("***Creating oneM2M ressources for clickButton under appID ["+appID+"] & poa ["+poa+"]");
 
 		// Create the Application resource
-		Container container = new Container();
-		container.getLabels().add(SampleConstants.CONTAINER_NAME);
-		container.setMaxNrOfInstances(BigInteger.valueOf(0));
-
 		AE ae = new AE();
 		ae.setRequestReachability(true);
 		ae.getPointOfAccess().add(poa);
@@ -429,7 +701,8 @@ public class SampleController {
 		// Create Application sub-resources only if application not yet created
 		if(response.getResponseStatusCode().equals(ResponseStatusCode.CREATED)) {
 			LOGGER.info("oneM2M Application Entity for the clickButton created under appID ["+appID+"] & poa ["+poa+"]");
-			container = new Container();
+			Container container = new Container();
+			container.getLabels().add(SampleConstants.CONTAINER_NAME_CLICKBUTTON);
 			container.setMaxNrOfInstances(BigInteger.valueOf(10));
 			
 			ResponsePrimitive containerResponse = null;
@@ -442,7 +715,7 @@ public class SampleController {
 			} else {
 				LOGGER.error("oneM2M DESCRIPTOR Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
  				LOGGER.error(containerResponse);
-				throw new BadRequestException("oneM2M DATA POSITION Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
+				throw new BadRequestException("oneM2M DESCRIPTOR Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
 			}
 			
 			// Create Position STATE container sub-resource
@@ -513,7 +786,7 @@ public class SampleController {
 			ResponsePrimitive containerContentResponse = null;
 			String target = null;
 			// Create DESCRIPTION contentInstance on the DESCRIPTOR container resource
-			content = ObixUtil.getDescriptorRep(SampleConstants.CSE_ID, appID, clickButtonID);
+			content = ObixUtil.getDescriptorRep_ClickButton(SampleConstants.CSE_ID, appID, clickButtonID);
 			
 			contentInstance.setContent(content);
 			contentInstance.setContentInfo(MimeMediaType.OBIX + ":" + MimeMediaType.ENCOD_PLAIN);
@@ -629,7 +902,7 @@ public class SampleController {
 				throw new BadRequestException("oneM2M DATA HOLD content instance for the clickButton can't be defined under resource ["+target+"]");
 			}
 		} else {
-			LOGGER.error("oneM2M Application Entity & ressources Containers for the clickButton were already created under appID ["+clickButtonID+"] & poa ["+poa+"]");
+			LOGGER.info("oneM2M Application Entity & ressources Containers for the clickButton were already created under appID ["+appID+"] & poa ["+poa+"]");
 		}		
 			
 	}
@@ -657,4 +930,14 @@ public class SampleController {
 		LOGGER.info("Generating appID oneM2M ressources for clickButton ["+clickButtonID+"]");
 		return clickButtonID.replace(":", "-");
 	}
+	
+	/**
+	 * Returns a valid oneM2M appID from the Flic.io Network Deamon used to listen the Flic.io BLE Buttons 
+	 * @param FlicDeamon - the FlicDeamon to which the FlicClient is connected
+	 */
+	private static String createAppID(FlicDeamon flicDeamonHost) {
+		LOGGER.info("Generating appID oneM2M ressources for Flic.io Network Deamon ["+flicDeamonHost+"]");
+		return flicDeamonHost.getFlicDeamonID();
+	}
+	
 }

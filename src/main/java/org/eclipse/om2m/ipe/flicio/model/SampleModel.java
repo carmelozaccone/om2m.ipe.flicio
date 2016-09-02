@@ -40,10 +40,8 @@ public class SampleModel {
 
 	public static void addClickButton(ClickButton clickButton) throws BadRequestException {
 		String clickButtonID = clickButton.getButtonID();
-		try {
-			checkClickButtonIDValue(clickButtonID);
-		} catch (BadRequestException e) {
-			throw new BadRequestException("Existing click button ID\n"+e.toString());
+		if (CLICKBUTTONS.containsKey(clickButtonID)) {
+			throw new BadRequestException("Existing click button ID\n");
 		}
 		CLICKBUTTONS.put(clickButtonID, clickButton);
 	}
@@ -84,6 +82,13 @@ public class SampleModel {
 				
 			case buttonup:
 				click = clickButtton.getClick();
+				
+				if (click == null) {
+					//buttondown event was not capture before present buttonup event
+					//we don't consider this click event
+					break;
+				}
+				
 				Instant buttonDown = click.getClickInstant();
 				//when button is released, this defines the ending moment of the click  
 				Instant buttonUp = Instant.now();

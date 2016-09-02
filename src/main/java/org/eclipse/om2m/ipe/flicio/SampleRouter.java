@@ -39,76 +39,136 @@ public class SampleRouter implements InterworkingService{
 	@Override
 	public ResponsePrimitive doExecute(RequestPrimitive request) {
 		ResponsePrimitive response = new ResponsePrimitive(request);
-		if(request.getQueryStrings().containsKey(DATA_QUERY_STRING.op)){
-			String operation = request.getQueryStrings().get(DATA_QUERY_STRING.op).get(0);
-			Operations op = Operations.getOperationFromString(operation);
-			String clickButtonID = null;
-			if(request.getQueryStrings().containsKey(DATA_QUERY_STRING.clickbuttonid)){
-				clickButtonID = request.getQueryStrings().get(DATA_QUERY_STRING.clickbuttonid).get(0);
-			}
-			LOGGER.info("Received request in Flic.io Sample IPE: "+DATA_QUERY_STRING.op+"=" + operation + " ; "+DATA_QUERY_STRING.clickbuttonid+" [" + clickButtonID+"]");
-
-			String content = null;
-			switch(op){
-			case GET_STATE_POSITION:
-				// Shall not get there...
-				throw new BadRequestException();
 		
-			case GET_STATE_POSITION_DIRECT:
-				content = SampleController.getFormattedClickButtonPosition(clickButtonID);
-				response.setContent(content);
-				request.setReturnContentType(MimeMediaType.OBIX);
-				response.setResponseStatusCode(ResponseStatusCode.OK);
-				break;
+		LOGGER.info(SampleConstants.AE_NAME+": Received request (named ["+request.getName()+"]) addressed to ["+request.getTo()+"] in Flic.io Sample IPE");
+		
+		if(request.getQueryStrings().containsKey(DATA_QUERY_STRING.op.toString())){
+			
+			String operation = request.getQueryStrings().get(DATA_QUERY_STRING.op.toString()).get(0);	
+			
+			if (operation != null) {
 				
-			case GET_STATE_PEERING:
-				// Shall not get there...
-				throw new BadRequestException();
-	
-			case GET_STATE_PEERING_DIRECT:
-				content = SampleController.getFormattedClickButtonPeering(clickButtonID);
-				response.setContent(content);
-				request.setReturnContentType(MimeMediaType.OBIX);
-				response.setResponseStatusCode(ResponseStatusCode.OK);
-				break;
-				
-			case GET_STATE_CLICK:
-				// Shall not get there...
-				throw new BadRequestException();
+				Operations op = Operations.getOperationFromString(operation);
+				String content = null;
 
-			case GET_STATE_CLICK_DIRECT:
-				content = SampleController.getFormattedClickButtonClick(clickButtonID);
-				response.setContent(content);
-				request.setReturnContentType(MimeMediaType.OBIX);
-				response.setResponseStatusCode(ResponseStatusCode.OK);
-				break;
+				switch(op){	
+					//The information response to such requests are obtained from the application memory
 				
-			case GET_STATE_DOUBLECLICK:
-				// Shall not get there...
-				throw new BadRequestException();
+					//Operations on Flic.io Buttons
 
-			case GET_STATE_DOUBLECLICK_DIRECT:
-				content = SampleController.getFormattedClickButtonDoubleClick(clickButtonID);
-				response.setContent(content);
-				request.setReturnContentType(MimeMediaType.OBIX);
-				response.setResponseStatusCode(ResponseStatusCode.OK);
-				break;
+					case GET_STATE_POSITION_DIRECT:
+					case GET_STATE_PEERING_DIRECT:
+					case GET_STATE_CLICK_DIRECT:	
+					case GET_STATE_DOUBLECLICK_DIRECT:
+					case GET_STATE_HOLD_DIRECT:
+					case GET_STATE_POSITION:
+					case GET_STATE_PEERING:
+					case GET_STATE_CLICK:
+					case GET_STATE_DOUBLECLICK:
+					case GET_STATE_HOLD:
+						String clickButtonID = null;
+						
+						if(request.getQueryStrings().containsKey(DATA_QUERY_STRING.clickbuttonid.toString())){
+							clickButtonID = request.getQueryStrings().get(DATA_QUERY_STRING.clickbuttonid.toString()).get(0);
+			
+							if (clickButtonID != null) {
+								LOGGER.info(SampleConstants.AE_NAME+"| Received request in Flic.io Sample IPE: "+DATA_QUERY_STRING.op+"=" + operation + " ; "+DATA_QUERY_STRING.clickbuttonid+" [" + clickButtonID+"]");
+						
+								switch(op){			
+								//The information response to such requests are obtained from the application memory
+								case GET_STATE_POSITION_DIRECT:
+									content = SampleController.getFormattedClickButtonPosition(clickButtonID);
+									response.setContent(content);
+									request.setReturnContentType(MimeMediaType.OBIX);
+									response.setResponseStatusCode(ResponseStatusCode.OK);
+									break;
+													
+								case GET_STATE_PEERING_DIRECT:
+									content = SampleController.getFormattedClickButtonPeering(clickButtonID);
+									response.setContent(content);
+									request.setReturnContentType(MimeMediaType.OBIX);
+									response.setResponseStatusCode(ResponseStatusCode.OK);
+									break;							
+					
+								case GET_STATE_CLICK_DIRECT:
+									content = SampleController.getFormattedClickButtonClick(clickButtonID);
+									response.setContent(content);
+									request.setReturnContentType(MimeMediaType.OBIX);
+									response.setResponseStatusCode(ResponseStatusCode.OK);
+									break;
+												
+								case GET_STATE_DOUBLECLICK_DIRECT:
+									content = SampleController.getFormattedClickButtonDoubleClick(clickButtonID);
+									response.setContent(content);
+									request.setReturnContentType(MimeMediaType.OBIX);
+									response.setResponseStatusCode(ResponseStatusCode.OK);
+									break;
+			
+								case GET_STATE_HOLD_DIRECT:
+									content = SampleController.getFormattedClickButtonHold(clickButtonID);
+									response.setContent(content);
+									request.setReturnContentType(MimeMediaType.OBIX);
+									response.setResponseStatusCode(ResponseStatusCode.OK);
+									break;
+										
+								case GET_STATE_POSITION:
+								case GET_STATE_PEERING:
+								case GET_STATE_CLICK:
+								case GET_STATE_DOUBLECLICK:
+								case GET_STATE_HOLD:
+									// Such operation requests addressing for Flic.io Button do not contain any query string fields
+									// Indeed the information response to such requests are found in the oneM2M resources repository
+									// Shall not get there...
+								default:
+									LOGGER.error(SampleConstants.AE_NAME+"| Received request (named ["+request.getName()+"]) addressed to ["+request.getTo()+"] for a non valid operation ["+operation+"]");									
+									throw new BadRequestException();
+								}
+							} 
+							else {				
+								LOGGER.error(SampleConstants.AE_NAME+"| Received request (named ["+request.getName()+"]) addressed to ["+request.getTo()+"] for operation ["+operation+"] does not contain any value for field ["+DATA_QUERY_STRING.clickbuttonid+"]");									
+								response.setResponseStatusCode(ResponseStatusCode.BAD_REQUEST);
+							}
+						} else {				
+							LOGGER.error(SampleConstants.AE_NAME+"| Received request (named ["+request.getName()+"]) addressed to ["+request.getTo()+"] does not contain any field ["+DATA_QUERY_STRING.clickbuttonid+"]");					
+							response.setResponseStatusCode(ResponseStatusCode.BAD_REQUEST);
+						}	
+						break;
 				
-			case GET_STATE_HOLD:
-				// Shall not get there...
-				throw new BadRequestException();
+				
+					//--------------------------------------------------
+					//Operations on Flic.io network deamon			
+					case SET_SCANNER_ON:
+						SampleController.startFlicScanner();
+		//				content = SampleController.getFormatted...
+		//				response.setContent(content);
+		//				request.setReturnContentType(MimeMediaType.OBIX);
+						response.setResponseStatusCode(ResponseStatusCode.OK);
+						break;
+		
+					case SET_SCANNER_OFF:
+						SampleController.stopFlicScanner();
+		
+		//				content = SampleController.getFormatted...
+		//				response.setContent(content);
+		//				request.setReturnContentType(MimeMediaType.OBIX);
+						response.setResponseStatusCode(ResponseStatusCode.OK);
+						break;
+						
+					//--------------------------------------------------		
+					default:
+						LOGGER.error(SampleConstants.AE_NAME+"| Received request (named ["+request.getName()+"]) addressed to ["+request.getTo()+"] for a non valid operation ["+operation+"]");									
+						throw new BadRequestException();
+					}	
 
-			case GET_STATE_HOLD_DIRECT:
-				content = SampleController.getFormattedClickButtonHold(clickButtonID);
-				response.setContent(content);
-				request.setReturnContentType(MimeMediaType.OBIX);
-				response.setResponseStatusCode(ResponseStatusCode.OK);
-				break;
-			default:
-				throw new BadRequestException();
-			}
-		}
-		if(response.getResponseStatusCode() == null){
+				
+				
+			} else {				
+				LOGGER.error(SampleConstants.AE_NAME+"| Received request (named ["+request.getName()+"]) addressed to ["+request.getTo()+"] does not contain any value for field ["+DATA_QUERY_STRING.op+"]");					
+				response.setResponseStatusCode(ResponseStatusCode.BAD_REQUEST);
+			}	
+			
+		} else {				
+			LOGGER.error(SampleConstants.AE_NAME+"| Received request (named ["+request.getName()+"]) addressed to ["+request.getTo()+"] does not contain any field ["+DATA_QUERY_STRING.op+"]");					
 			response.setResponseStatusCode(ResponseStatusCode.BAD_REQUEST);
 		}
 		return response;

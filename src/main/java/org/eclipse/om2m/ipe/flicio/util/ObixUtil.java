@@ -24,14 +24,12 @@ import java.time.Duration;
 import org.eclipse.om2m.commons.constants.Constants;
 import org.eclipse.om2m.commons.constants.ShortName;
 import org.eclipse.om2m.commons.obix.Abstime;
-import org.eclipse.om2m.commons.obix.Bool;
 import org.eclipse.om2m.commons.obix.Contract;
 import org.eclipse.om2m.commons.obix.List;
 import org.eclipse.om2m.commons.obix.Obj;
 import org.eclipse.om2m.commons.obix.Op;
 import org.eclipse.om2m.commons.obix.Reltime;
 import org.eclipse.om2m.commons.obix.Str;
-import org.eclipse.om2m.commons.obix.Time;
 import org.eclipse.om2m.commons.obix.Uri;
 import org.eclipse.om2m.commons.obix.io.ObixEncoder;
 import org.eclipse.om2m.ipe.flicio.constants.Operations;
@@ -43,23 +41,56 @@ import org.eclipse.om2m.ipe.flicio.constants.SampleConstants.DATA_QUERY_STRING;
 import org.eclipse.om2m.ipe.flicio.model.Click;
 import org.eclipse.om2m.ipe.flicio.model.ClickButton;
 import org.eclipse.om2m.ipe.flicio.model.DoubleClick;
+import org.eclipse.om2m.ipe.flicio.model.FlicDeamon;
 
 public class ObixUtil {
+	
+	/**
+	 * Returns an obix XML representation describing the Flic.io network deamon.
+	 * @param cseId - SclBase id
+	 * @param appId - Application Id
+	 * @param String - the FlicDeamon ID
+	 * @return Obix XML representation
+	 */
+	public static String getDescriptorRep_FlicDeamon(String cseId, String appId, String flicDeamonID) {
+		String prefix = cseId+"/"+ Constants.CSE_NAME + "/" + appId;
+		// oBIX
+		Obj descriptor = new Obj();
+		descriptor.add(new Str("type",FlicDeamon.TYPE));
+		descriptor.add(new Str("location",FlicDeamon.LOCATION));
+		descriptor.add(new Str("appId",appId));
+
+		// OP GetStatePosition
+		Op opScannerOn = new Op();
+		opScannerOn.setName(Operations.SET_SCANNER_ON.toString());
+		opScannerOn.setHref(prefix + "?op="+ Operations.SET_SCANNER_ON);
+		opScannerOn.setIs(new Contract("execute"));
+		descriptor.add(opScannerOn);
+
+		// OP GetStatePosition		
+		Op opScannerOff = new Op();
+		opScannerOff.setName(Operations.SET_SCANNER_OFF.toString());
+		opScannerOff.setHref(prefix + "?op=" + Operations.SET_SCANNER_OFF);
+		opScannerOff.setIs(new Contract("execute"));
+		descriptor.add(opScannerOff);
+		
+		return ObixEncoder.toString(descriptor);
+	}
 	
 	/**
 	 * Returns an obix XML representation describing the click button.
 	 * @param cseId - SclBase id
 	 * @param appId - Application Id
-	 * @parem ClickButtonID - the ClickButton ID
+	 * @param String - the ClickButton ID
 	 * @return Obix XML representation
 	 */
-	public static String getDescriptorRep(String cseId, String appId, String clickButtonID) {
+	public static String getDescriptorRep_ClickButton(String cseId, String appId, String clickButtonID) {
 		String prefix = cseId+"/"+ Constants.CSE_NAME + "/" + appId;
 		// oBIX
-		Obj obj = new Obj();
-		obj.add(new Str("type",ClickButton.TYPE));
-		obj.add(new Str("location",ClickButton.LOCATION));
-		obj.add(new Str("appId",appId));
+		Obj descriptor = new Obj();
+		descriptor.add(new Str("type",ClickButton.TYPE));
+		descriptor.add(new Str("location",ClickButton.LOCATION));
+		descriptor.add(new Str("appId",appId));
 		
 		// OP GetStatePosition from SCL DataBase
 		Op opStatePosition = new Op();
@@ -68,7 +99,7 @@ public class ObixUtil {
 		opStatePosition.setIs(new Contract("retrieve"));
 		opStatePosition.setIn(new Contract("obix:Nil"));
 		opStatePosition.setOut(new Contract("obix:Nil"));
-		obj.add(opStatePosition);
+		descriptor.add(opStatePosition);
 		
 		// OP GetStatePosition from SCL IPU
 		Op opStatePositionDirect = new Op();
@@ -77,7 +108,7 @@ public class ObixUtil {
 		opStatePositionDirect.setIs(new Contract("execute"));
 		opStatePositionDirect.setIn(new Contract("obix:Nil"));
 		opStatePositionDirect.setOut(new Contract("obix:Nil"));
-		obj.add(opStatePositionDirect);
+		descriptor.add(opStatePositionDirect);
 				
 		// OP GetStatePeering from SCL DataBase
 		Op opStatePeering = new Op();
@@ -86,7 +117,7 @@ public class ObixUtil {
 		opStatePeering.setIs(new Contract("retrieve"));
 		opStatePeering.setIn(new Contract("obix:Nil"));
 		opStatePeering.setOut(new Contract("obix:Nil"));
-		obj.add(opStatePeering);
+		descriptor.add(opStatePeering);
 
 		// OP GetStatePeering from SCL IPU
 		Op opStateDownPeering = new Op();
@@ -95,7 +126,7 @@ public class ObixUtil {
 		opStateDownPeering.setIs(new Contract("execute"));
 		opStateDownPeering.setIn(new Contract("obix:Nil"));
 		opStateDownPeering.setOut(new Contract("obix:Nil"));
-		obj.add(opStateDownPeering);
+		descriptor.add(opStateDownPeering);
 
 		// OP GetStateClick from SCL DataBase
 		Op opStateClick = new Op();
@@ -104,7 +135,7 @@ public class ObixUtil {
 		opStateClick.setIs(new Contract("retrieve"));
 		opStateClick.setIn(new Contract("obix:Nil"));
 		opStateClick.setOut(new Contract("obix:Nil"));
-		obj.add(opStateClick);
+		descriptor.add(opStateClick);
 		
 		
 		// OP GetStateClick from SCL IPU
@@ -114,7 +145,7 @@ public class ObixUtil {
 		opStateClickDirect.setIs(new Contract("execute"));
 		opStateClickDirect.setIn(new Contract("obix:Nil"));
 		opStateClickDirect.setOut(new Contract("obix:Nil"));
-		obj.add(opStateClickDirect);
+		descriptor.add(opStateClickDirect);
 
 		// OP GetStateDoubleClick from SCL DataBase
 		Op opStateDoubleClick = new Op();
@@ -123,7 +154,7 @@ public class ObixUtil {
 		opStateDoubleClick.setIs(new Contract("retrieve"));
 		opStateDoubleClick.setIn(new Contract("obix:Nil"));
 		opStateDoubleClick.setOut(new Contract("obix:Nil"));
-		obj.add(opStateDoubleClick);
+		descriptor.add(opStateDoubleClick);
 		
 		// OP GetStateDoubleClick from SCL IPU
 		Op opStateDoubleClickDirect = new Op();
@@ -132,7 +163,7 @@ public class ObixUtil {
 		opStateDoubleClickDirect.setIs(new Contract("execute"));
 		opStateDoubleClickDirect.setIn(new Contract("obix:Nil"));
 		opStateDoubleClickDirect.setOut(new Contract("obix:Nil"));
-		obj.add(opStateDoubleClickDirect);
+		descriptor.add(opStateDoubleClickDirect);
 		
 		// OP GetStateHold from SCL DataBase
 		Op opStateHold = new Op();
@@ -141,7 +172,7 @@ public class ObixUtil {
 		opStateHold.setIs(new Contract("retrieve"));
 		opStateHold.setIn(new Contract("obix:Nil"));
 		opStateHold.setOut(new Contract("obix:Nil"));
-		obj.add(opStateHold);
+		descriptor.add(opStateHold);
 		
 		// OP GetStateHold from SCL IPU
 		Op opStateHoldDirect = new Op();
@@ -150,37 +181,11 @@ public class ObixUtil {
 		opStateHoldDirect.setIs(new Contract("execute"));
 		opStateHoldDirect.setIn(new Contract("obix:Nil"));
 		opStateHoldDirect.setOut(new Contract("obix:Nil"));
-		obj.add(opStateHoldDirect);
+		descriptor.add(opStateHoldDirect);
 
-		return ObixEncoder.toString(obj);
+		return ObixEncoder.toString(descriptor);
 	}
 
-	/**
-	 * Returns an obix XML representation describing the state of the ClickButton oneM2M resource
-	 * @param clickButtonID - oneM2M Application ID
-	 * @param buttonPosition - the click button Position
-	 * @param buttonPeering - the click button Peering
-	 * @return Obix XML representation
-	 */
-	public static String getStateRep(String clickButtonID, ButtonPosition buttonPosition, ButtonPeering buttonPeering) {
-		// oBIX
-		Obj obj = new Obj();
-		obj.add(new Str("type",ClickButton.TYPE));
-		obj.add(new Str("location",ClickButton.LOCATION));
-		obj.add(new Str("clickbuttonid",clickButtonID));
-		if (buttonPosition!=null) {
-			obj.add(new Str(BUTTON_FEATURE.DATA_POSITION.toString(), buttonPosition.toString()));
-		} else {
-			obj.add(new Str(BUTTON_FEATURE.DATA_POSITION.toString(), SampleConstants.UNKNOW));		
-		}
-		if (buttonPeering!=null) {
-			obj.add(new Str(BUTTON_FEATURE.DATA_PEERING.toString(), buttonPeering.toString()));		
-		} else {
-			obj.add(new Str(BUTTON_FEATURE.DATA_PEERING.toString(), SampleConstants.UNKNOW));					
-		}
-		return ObixEncoder.toString(obj);
-	}
-	
 	/**
 	 * Returns an obix XML representation describing the Position state of the ClickButton oneM2M resource
 	 * @param clickButtonID - oneM2M Application ID
@@ -239,22 +244,24 @@ public class ObixUtil {
 		List list = new List();
 		list.setName("click");
 				
-		Abstime abst = new Abstime();
-		abst.setName("clicktimestamp");
-		//set the click timestamp
-		abst.setVal(buttonClick.getClickInstant().toString());
-		
-		Reltime relt = new Reltime();
-		relt.setName("clickduration");
-		//set the click duration
-		//TBD HOW TO create the obix Realtime
-//		relt.setIs(buttonClick.getClickHold().toString());
-		
-		list.add(abst);
-		list.add(relt);
+		if (buttonClick!=null) {
+			Abstime abst = new Abstime();
+			abst.setName("clicktimestamp");
+			//set the click timestamp
+			abst.setVal(buttonClick.getClickInstant().toString());
 			
+			Reltime relt = new Reltime();
+			relt.setName("clickduration");
+			//set the click duration
+			//TBD HOW TO create the obix Realtime
+	//		relt.setIs(buttonClick.getClickHold().toString());
+			
+			list.add(abst);
+			list.add(relt);
+				
+		}		
 		obj.add(list);
-		
+
 		return ObixEncoder.toString(obj);
 	}
 	
@@ -276,43 +283,44 @@ public class ObixUtil {
 		List list = new List();
 		list.setName("doubleclick");
 		
-		Abstime abst1 = new Abstime();
-		abst1.setName("click1timestamp");
-		//set the 1st click timestamp
-		buttonDoubleClick.getClickInstant1();
-		abst1.setVal(buttonDoubleClick.getClickInstant1().toString());
-		
-		Reltime relt1 = new Reltime();
-		relt1.setName("click1duration");
-		//set the 1st click duration
-		//TBD HOW TO create the obix Realtime
-//		relt1.setIs(buttonDoubleClick.getClickHold1().toString());
-		
-		list.add(abst1);
-		list.add(relt1);
-
-		Reltime relt3 = new Reltime();
-		relt3.setName("interclicksduration");
-		//set the inter clicks duration
-		//TBD HOW TO create the obix Realtime
-//		relt1.setIs(buttonDoubleClick.getInterClicksHold());
-		
-		list.add(relt3);
-		
-		Abstime abst2 = new Abstime();
-		abst2.setName("click2timestamp");
-		//set the 2nd click timestamp
-		abst2.setVal(buttonDoubleClick.getClickInstant2().toString());
-		
-		Reltime relt2 = new Reltime();
-		relt2.setName("click2duration");
-		//set the 1st click duration
-		//TBD HOW TO create the obix Realtime
-//		relt2.setIs(buttonDoubleClick.getClickHold2().toString());
-		
-		list.add(abst2);
-		list.add(relt2);
-		
+		if (buttonDoubleClick!=null) {
+			Abstime abst1 = new Abstime();
+			abst1.setName("click1timestamp");
+			//set the 1st click timestamp
+			buttonDoubleClick.getClickInstant1();
+			abst1.setVal(buttonDoubleClick.getClickInstant1().toString());
+			
+			Reltime relt1 = new Reltime();
+			relt1.setName("click1duration");
+			//set the 1st click duration
+			//TBD HOW TO create the obix Realtime
+	//		relt1.setIs(buttonDoubleClick.getClickHold1().toString());
+			
+			list.add(abst1);
+			list.add(relt1);
+	
+			Reltime relt3 = new Reltime();
+			relt3.setName("interclicksduration");
+			//set the inter clicks duration
+			//TBD HOW TO create the obix Realtime
+	//		relt1.setIs(buttonDoubleClick.getInterClicksHold());
+			
+			list.add(relt3);
+			
+			Abstime abst2 = new Abstime();
+			abst2.setName("click2timestamp");
+			//set the 2nd click timestamp
+			abst2.setVal(buttonDoubleClick.getClickInstant2().toString());
+			
+			Reltime relt2 = new Reltime();
+			relt2.setName("click2duration");
+			//set the 1st click duration
+			//TBD HOW TO create the obix Realtime
+	//		relt2.setIs(buttonDoubleClick.getClickHold2().toString());
+			
+			list.add(abst2);
+			list.add(relt2);
+		}
 		obj.add(list);	
 		return ObixEncoder.toString(obj);
 	}
@@ -330,14 +338,20 @@ public class ObixUtil {
 		obj.add(new Str("type",ClickButton.TYPE));
 		obj.add(new Str("location",ClickButton.LOCATION));
 		obj.add(new Str("clickbuttonid",clickButtonID));
-				
-		Reltime relt = new Reltime();
-		relt.setName("singleclickduration");
-		//set the button hold duration
-		//TBD HOW TO create the obix Realtime
-//		relt.setIs(buttonHoldDuration.toString());
-		obj.add(relt);
 		
+		//list to hold doubleclick details
+		List list = new List();
+		list.setName("holdtimeduration");
+		
+		if (buttonHoldDuration!=null) {
+			Reltime relt = new Reltime();
+			relt.setName("singleclickduration");
+			//set the button hold duration
+			//TBD HOW TO create the obix Realtime
+	//		relt.setIs(buttonHoldDuration.toString());
+			list.add(relt);
+		}		
+		obj.add(list);
 		return ObixEncoder.toString(obj);
 	}
 }
