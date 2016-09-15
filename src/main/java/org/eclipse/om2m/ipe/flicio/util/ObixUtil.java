@@ -56,7 +56,7 @@ public class ObixUtil {
 		String prefix = cseId+"/"+ Constants.CSE_NAME + "/" + appId;
 		// oBIX
 		Obj descriptor = new Obj();
-		descriptor.add(new Str("type",FlicDeamon.TYPE));
+		descriptor.add(new Str("type",SampleConstants.POA+"-"+FlicDeamon.TYPE));
 		descriptor.add(new Str("location",FlicDeamon.LOCATION));
 		descriptor.add(new Str("appId",appId));
 

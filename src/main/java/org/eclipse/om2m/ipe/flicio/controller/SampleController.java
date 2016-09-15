@@ -614,8 +614,9 @@ public class SampleController {
 	 * @param FlicDeamon - the FlicDeamon reachability information
 	 */
 	private static void createFlicDeamonResources(FlicDeamon flicDeamonHost){
-		String appID =  SampleConstants.MN_AE_PREFIX+"_"+createAppID(flicDeamonHost); 
-		String poa = SampleConstants.POA+"-"+FlicDeamon.TYPE;
+		String appID =  createAppID(flicDeamonHost); 
+//		String poa = SampleConstants.POA+"-"+FlicDeamon.TYPE;
+		String poa = SampleConstants.POA;
 		LOGGER.info("***Creating oneM2M ressources for Flic.io network deamon under appID ["+appID+"] & poa ["+poa+"]");
 
 		// Create the Application resource
@@ -647,7 +648,7 @@ public class SampleController {
 			} else {
 				LOGGER.error("oneM2M DESCRIPTOR Container for the Flic.io network deamon can't be created under appID ["+appID+"] & poa ["+poa+"]");
  				LOGGER.error(containerResponse);
-				throw new BadRequestException("oneM2M DATA POSITION Container for the Flic.io network deamon can't be created under appID ["+appID+"] & poa ["+poa+"]");
+				throw new BadRequestException("oneM2M DESCRIPTOR Container for the Flic.io network deamon can't be created under appID ["+appID+"] & poa ["+poa+"]");
 			}
 						
 			String content;
@@ -687,8 +688,9 @@ public class SampleController {
 	 * @param buttonPeering - current click button peering status
 	 */
 	private static void createClickButtonResources(String clickButtonID, ButtonPosition buttonPosition, ButtonPeering buttonPeering) throws BadRequestException {
-		String appID =  SampleConstants.MN_AE_PREFIX+"_"+createAppID(clickButtonID); 
-		String poa = SampleConstants.POA+"-"+ClickButton.TYPE;
+		String appID =  createAppID(clickButtonID); 
+//		String poa = SampleConstants.POA+"-"+ClickButton.TYPE;
+		String poa = SampleConstants.POA;
 		LOGGER.info("***Creating oneM2M ressources for clickButton under appID ["+appID+"] & poa ["+poa+"]");
 
 		// Create the Application resource
@@ -723,6 +725,7 @@ public class SampleController {
 			}
 			
 			// Create Position STATE container sub-resource
+			
 			container.setName(BUTTON_FEATURE.DATA_POSITION.toString());
 			containerResponse =  RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_POSITION.toString(), container);
 			statusCode = containerResponse.getResponseStatusCode();
@@ -931,7 +934,7 @@ public class SampleController {
 	private static String createAppID(String clickButtonID) {
 		//":" char in the BLE adressing is not valid for oneM2M appID
 		LOGGER.info("Generating appID oneM2M ressources for clickButton ["+clickButtonID+"]");
-		return clickButtonID.replace(":", "-");
+		return SampleConstants.MN_AE_PREFIX+"_"+clickButtonID.replace(":", "-");
 	}
 	
 	/**
@@ -940,7 +943,7 @@ public class SampleController {
 	 */
 	private static String createAppID(FlicDeamon flicDeamonHost) {
 		LOGGER.info("Generating appID oneM2M ressources for Flic.io Network Deamon ["+flicDeamonHost+"]");
-		return flicDeamonHost.getFlicDeamonID();
+		return SampleConstants.MN_AE_PREFIX+"_"+flicDeamonHost.getFlicDeamonID();
 	}
 	
 }
