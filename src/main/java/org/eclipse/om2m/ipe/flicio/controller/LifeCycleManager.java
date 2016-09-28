@@ -98,7 +98,7 @@ public class LifeCycleManager {
 				//host is not known so could never connect to it
 				return null;
 			} catch (IOException e) {
-				LOGGER.error("Flic.io oneM2M IPE can't connect to Flic.io network Daemon ["+flicDeamonHost+"]: "+e.toString()+", waiting ["+SampleConstants.FLIC_DEAMON_CONNECTION_RETRY+"] seconds and trying again");
+				LOGGER.error("Flic.io oneM2M IPE can't connect to Flic.io network Daemon ["+flicDeamonHost+"]: "+e.toString()+".\nWaiting ["+SampleConstants.FLIC_DEAMON_CONNECTION_RETRY+"] seconds and trying again");
 				//Reconnect to Flic.io Daemon if connection is lost
 		        try
 		        {
@@ -499,6 +499,11 @@ public class LifeCycleManager {
 	                flicClient.addConnectionChannel(buttonConnectionChannel);
 	            }
 	        });
+		}	catch (IOException e) {
+			LOGGER.error("Flic.io oneM2M IPE error while setting up the client: "+e.toString());
+			e.printStackTrace();
+		}
+		try {
 	        flicClient.handleEvents();
 		}	catch (IOException e) {
 			LOGGER.error("Flic.io oneM2M IPE error while using the client: "+e.toString());

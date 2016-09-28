@@ -58,7 +58,7 @@ public class ClickButton {
 	  	this.buttonConnectionChannel = buttonConnectionChannel;
 	    this.buttonID =createButtonID(buttonConnectionChannel);
 	    this.buttonPosition = null;
-	    this.buttonPeering = null;
+	    this.buttonPeering = ButtonPeering.buttonprivate;
     	this.click = null;
     	this.doubleClick = null;
     }

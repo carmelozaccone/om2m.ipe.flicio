@@ -711,6 +711,10 @@ public class SampleController {
 			container.setMaxNrOfInstances(BigInteger.valueOf(10));
 			
 			ResponsePrimitive containerResponse = null;
+			ResponsePrimitive containerResponseTMP = null;
+			
+			//========================================================
+			//group the DESCRIPTOR & BUTTON_FEATURE.DATA_PEERING features into a specific subcontainer
 			// Create DESCRIPTOR container sub-resource
 			container.setName(SampleConstants.CONTAINER_NAME_CLICKBUTTON);
 			containerResponse =  RequestSender.createContainer(response.getLocation(), SampleConstants.CONTAINER_NAME_CLICKBUTTON, container);
@@ -724,23 +728,12 @@ public class SampleController {
 				throw new BadRequestException("oneM2M DESCRIPTOR Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
 			}
 			
-			// Create Position STATE container sub-resource
+			containerResponseTMP = containerResponse;
 			
-			container.setName(BUTTON_FEATURE.DATA_POSITION.toString());
-			containerResponse =  RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_POSITION.toString(), container);
-			statusCode = containerResponse.getResponseStatusCode();
-			if(statusCode.equals(ResponseStatusCode.CREATED)) {
-				LOGGER.info("oneM2M DATA POSITION Container for the clickButton created under appID ["+appID+"] & poa ["+poa+"]");
-				LOGGER.info(containerResponse);
-			} else {
-				LOGGER.error("oneM2M DATA POSITION Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
-				LOGGER.error(containerResponse);
-				throw new BadRequestException("oneM2M DATA POSITION Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
-			}
-			
+			//===========================================
 			// Create BLE Peering STATE container sub-resource
 			container.setName(BUTTON_FEATURE.DATA_PEERING.toString());
-			containerResponse =  RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_PEERING.toString(), container);
+			containerResponse =  RequestSender.createContainer(containerResponseTMP.getLocation(), BUTTON_FEATURE.DATA_PEERING.toString(), container);
 			statusCode = containerResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
 				LOGGER.info("oneM2M DATA PEERING Container for the clickButton created under appID ["+appID+"] & poa ["+poa+"]");
@@ -750,10 +743,73 @@ public class SampleController {
 				LOGGER.error(containerResponse);
 				throw new BadRequestException("oneM2M DATA PEERING Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
 			}
+			//========================================================
 			
-			// Create Click STATE container sub-resource
+			//========================================================
+			//group the BUTTON_FEATURE.DATA_POSITION & BUTTON_FEATURE.DATA_HOLD features into a specific subcontainer			
+			// Create Button STATE container sub-resource
+			container.setName(BUTTON_FEATURE.DATA_BUTTON.toString());
+			containerResponse =  RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_BUTTON.toString(), container);
+			statusCode = containerResponse.getResponseStatusCode();
+			if(statusCode.equals(ResponseStatusCode.CREATED)) {
+				LOGGER.info("oneM2M BUTTON DESCRIPTOR Container for the clickButton created under appID ["+appID+"] & poa ["+poa+"]");
+				LOGGER.info(containerResponse);
+			} else {
+				LOGGER.error("oneM2M BUTTON DESCRIPTOR Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
+				LOGGER.error(containerResponse);
+				throw new BadRequestException("oneM2M BUTTON Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
+			}
+			
+			containerResponseTMP = containerResponse;
+		
+			// Create Position STATE container sub-resource
+			container.setName(BUTTON_FEATURE.DATA_POSITION.toString());
+			containerResponse =  RequestSender.createContainer(containerResponseTMP.getLocation(), BUTTON_FEATURE.DATA_POSITION.toString(), container);
+			statusCode = containerResponse.getResponseStatusCode();
+			if(statusCode.equals(ResponseStatusCode.CREATED)) {
+				LOGGER.info("oneM2M DATA POSITION Container for the clickButton created under appID ["+appID+"] & poa ["+poa+"]");
+				LOGGER.info(containerResponse);
+			} else {
+				LOGGER.error("oneM2M DATA POSITION Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
+				LOGGER.error(containerResponse);
+				throw new BadRequestException("oneM2M DATA POSITION Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
+			}
+
+			// Create Hold STATE container sub-resource
+			container.setName(BUTTON_FEATURE.DATA_HOLD.toString());
+			containerResponse = RequestSender.createContainer(containerResponseTMP.getLocation(), BUTTON_FEATURE.DATA_HOLD.toString(), container);
+			statusCode = containerResponse.getResponseStatusCode();
+			if(statusCode.equals(ResponseStatusCode.CREATED)) {
+				LOGGER.info("oneM2M DATA HOLD Container for the clickButton created under appID ["+appID+"] & poa ["+poa+"]");
+				LOGGER.info(containerResponse);
+			} else {
+				LOGGER.error("oneM2M DATA HOLD Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
+				LOGGER.error(containerResponse);
+				throw new BadRequestException("oneM2M DATA HOLD Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
+			}
+			//========================================================
+
+			//========================================================
+			//group the BUTTON_FEATURE.DATA_CLICK & BUTTON_FEATURE.DATA_DOUBLECLICK features into a specific subcontainer
+			
+			// Create ClickS STATE container sub-resource
+			container.setName(BUTTON_FEATURE.DATA_CLICKS.toString());
+			containerResponse =  RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_CLICKS.toString(), container);
+			statusCode = containerResponse.getResponseStatusCode();
+			if(statusCode.equals(ResponseStatusCode.CREATED)) {
+				LOGGER.info("oneM2M CLICKS DESCRIPTOR Container for the clickButton created under appID ["+appID+"] & poa ["+poa+"]");
+				LOGGER.info(containerResponse);
+			} else {
+				LOGGER.error("oneM2M CLICKS DESCRIPTOR Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
+				LOGGER.error(containerResponse);
+				throw new BadRequestException("oneM2M CLICKS Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
+			}
+			
+			containerResponseTMP = containerResponse;
+			
+				// Create Click STATE container sub-resource
 			container.setName(BUTTON_FEATURE.DATA_CLICK.toString());
-			containerResponse =  RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_CLICK.toString(), container);
+			containerResponse =  RequestSender.createContainer(containerResponseTMP.getLocation(), BUTTON_FEATURE.DATA_CLICK.toString(), container);
 			statusCode = containerResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
 				LOGGER.info("oneM2M DATA CLICK Container for the clickButton created under appID ["+appID+"] & poa ["+poa+"]");
@@ -766,7 +822,7 @@ public class SampleController {
 			
 			// Create Double Click STATE container sub-resource
 			container.setName(BUTTON_FEATURE.DATA_DOUBLECLICK.toString());
-			containerResponse = RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_DOUBLECLICK.toString(), container);
+			containerResponse = RequestSender.createContainer(containerResponseTMP.getLocation(), BUTTON_FEATURE.DATA_DOUBLECLICK.toString(), container);
 			statusCode = containerResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
 				LOGGER.info("oneM2M DATA DOUBLECLICK Container for the clickButton created under appID ["+appID+"] & poa ["+poa+"]");
@@ -776,28 +832,18 @@ public class SampleController {
 				LOGGER.error(containerResponse);
 				throw new BadRequestException("oneM2M DATA DOUBLECLICK Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
 			}
-			
-			// Create Hold STATE container sub-resource
-			container.setName(BUTTON_FEATURE.DATA_HOLD.toString());
-			containerResponse = RequestSender.createContainer(response.getLocation(), BUTTON_FEATURE.DATA_HOLD.toString(), container);
-			statusCode = containerResponse.getResponseStatusCode();
-			if(statusCode.equals(ResponseStatusCode.CREATED)) {
-				LOGGER.info("oneM2M DATA HOLD Container for the clickButton created under appID ["+appID+"] & poa ["+poa+"]");
-				LOGGER.info(containerResponse);
-			} else {
-				LOGGER.error("oneM2M DATA HOLD Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
-				LOGGER.error(containerResponse);
-				throw new BadRequestException("oneM2M DATA HOLD Container for the clickButton can't be created under appID ["+appID+"] & poa ["+poa+"]");
-			}
-	
-			LOGGER.info("***Creating oneM2M ressources contents for clickButton under appID ["+appID+"] & poa ["+poa+"]");	
+			//========================================================
+
+			//////////////////////////////////////////////////////////////
+			// Create initial contentInstance on the STATE containers resources
 			
 			String content;
 			ContentInstance contentInstance = new ContentInstance();
 	
 			ResponsePrimitive containerContentResponse = null;
 			String target = null;
-			// Create DESCRIPTION contentInstance on the DESCRIPTOR container resource
+			
+			// Create DESCRIPTOR contentInstance on the DESCRIPTOR container resource
 			content = ObixUtil.getDescriptorRep_ClickButton(SampleConstants.CSE_ID, appID, clickButtonID);
 			
 			contentInstance.setContent(content);
@@ -807,21 +853,64 @@ public class SampleController {
 			
 			statusCode = containerContentResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED)) {
-				LOGGER.info("oneM2M DESCRIPTION content instance for the clickButton created under resource ["+target+"]");
+				LOGGER.info("oneM2M DESCRIPTOR content instance for the clickButton created under resource ["+target+"]");
 				LOGGER.debug("===\n"+content+"\n===");
 				LOGGER.info(containerContentResponse);
 			} else {
-				LOGGER.error("oneM2M DESCRIPTION content instance for the clickButton can't be created under resource ["+target+"]");
+				LOGGER.error("oneM2M DESCRIPTOR content instance for the clickButton can't be created under resource ["+target+"]");
 				LOGGER.debug("===\n"+content+"\n===");
 				LOGGER.error(containerContentResponse);		
-				throw new BadRequestException("oneM2M DESCRIPTION content instance for the clickButton can't be created under resource ["+target+"]");
+				throw new BadRequestException("oneM2M DESCRIPTOR content instance for the clickButton can't be created under resource ["+target+"]");
 			}
-				
-			// Create initial contentInstance on the STATE containers resources
+			
+			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
+			
+			
+			// Create initial contentInstance on the button BLE Peering STATE container resources
+			content = ObixUtil.getStateRep(clickButtonID, buttonPeering);
+			contentInstance.setContent(content);
+			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + SampleConstants.CONTAINER_NAME_CLICKBUTTON + "/" + BUTTON_FEATURE.DATA_PEERING;
+			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_PEERING.toString(), contentInstance);
+		
+			statusCode = containerContentResponse.getResponseStatusCode();
+			if(statusCode.equals(ResponseStatusCode.CREATED) | statusCode.equals(ResponseStatusCode.UPDATED) | statusCode.equals(ResponseStatusCode.OK)) {
+				LOGGER.info("oneM2M DATA PEERING content instance for the clickButton defined under resource ["+target+"]");
+				LOGGER.debug("===\n"+content+"\n===");
+				LOGGER.info(containerContentResponse);
+			} else {
+				LOGGER.error("oneM2M DATA PEERING content instance for the clickButton can't be defined under resource ["+target+"]");
+				LOGGER.debug("===\n"+content+"\n===");
+				LOGGER.error(containerContentResponse);
+				throw new BadRequestException("oneM2M DATA PEERING content instance for the clickButton can't be defined under resource ["+target+"]");
+			}
+			
+			//===========================================
+			//the BUTTON_FEATURE.DATA_POSITION & BUTTON_FEATURE.DATA_HOLD features are grouped into a specific subcontainer
+			
+			// Create BUTTON DESCRIPTION contentInstance on the BUTTON DESCRIPTOR container resource
+			content = ObixUtil.getDescriptorRep_Button(SampleConstants.CSE_ID, appID, clickButtonID);
+			
+			contentInstance.setContent(content);
+			contentInstance.setContentInfo(MimeMediaType.OBIX + ":" + MimeMediaType.ENCOD_PLAIN);
+			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_BUTTON;
+			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_DESCRIPTOR.toString(), contentInstance);			
+			
+			statusCode = containerContentResponse.getResponseStatusCode();
+			if(statusCode.equals(ResponseStatusCode.CREATED)) {
+				LOGGER.info("oneM2M BUTTON DESCRIPTION content instance for the clickButton created under resource ["+target+"]");
+				LOGGER.debug("===\n"+content+"\n===");
+				LOGGER.info(containerContentResponse);
+			} else {
+				LOGGER.error("oneM2M BUTTON DESCRIPTION content instance for the clickButton can't be created under resource ["+target+"]");
+				LOGGER.debug("===\n"+content+"\n===");
+				LOGGER.error(containerContentResponse);		
+				throw new BadRequestException("oneM2M BUTTON DESCRIPTION content instance for the clickButton can't be created under resource ["+target+"]");
+			}
+			
 			// Create initial contentInstance on the button Position STATE container resources
 			content = ObixUtil.getStateRep(clickButtonID, buttonPosition);
 			contentInstance.setContent(content);
-			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_POSITION;
+			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_BUTTON + "/" + BUTTON_FEATURE.DATA_POSITION;
 			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_POSITION.toString(), contentInstance);
 			
 			statusCode = containerContentResponse.getResponseStatusCode();
@@ -836,28 +925,51 @@ public class SampleController {
 				throw new BadRequestException("oneM2M DATA POSITION content instance for the clickButton can't be defined under resource ["+target+"]");
 			}
 	
-			// Create initial contentInstance on the button BLE Peering STATE container resources
-			content = ObixUtil.getStateRep(clickButtonID, buttonPeering);
+			// Create initial contentInstance on the button Hold STATE container resources
+			content = ObixUtil.getStateRep(clickButtonID,  Duration.ZERO);
 			contentInstance.setContent(content);
-			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_PEERING;
-			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_PEERING.toString(), contentInstance);
+			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_BUTTON + "/" + BUTTON_FEATURE.DATA_HOLD;	
+			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_HOLD.toString(), contentInstance);
 		
 			statusCode = containerContentResponse.getResponseStatusCode();
 			if(statusCode.equals(ResponseStatusCode.CREATED) | statusCode.equals(ResponseStatusCode.UPDATED) | statusCode.equals(ResponseStatusCode.OK)) {
-				LOGGER.info("oneM2M DATA PEERING content instance for the clickButton defined under resource ["+target+"]");
+				LOGGER.info("oneM2M DATA HOLD content instance for the clickButton defined under resource ["+target+"]");
 				LOGGER.debug("===\n"+content+"\n===");
 				LOGGER.info(containerContentResponse);
 			} else {
-				LOGGER.error("oneM2M DATA PEERING content instance for the clickButton can't be defined under resource ["+target+"]");
+				LOGGER.error("oneM2M DATA HOLD content instance for the clickButton can't be defined under resource ["+target+"]");
 				LOGGER.debug("===\n"+content+"\n===");
 				LOGGER.error(containerContentResponse);
-				throw new BadRequestException("oneM2M DATA PEERING content instance for the clickButton can't be defined under resource ["+target+"]");
+				throw new BadRequestException("oneM2M DATA HOLD content instance for the clickButton can't be defined under resource ["+target+"]");
 			}
-	
+			
+			//===========================================
+			//the BUTTON_FEATURE.DATA_CLICK & BUTTON_FEATURE.DATA_CLICK features are grouped into a specific subcontainer
+			// Create BUTTON DESCRIPTION contentInstance on the BUTTON DESCRIPTOR container resource
+			content = ObixUtil.getDescriptorRep_Clicks(SampleConstants.CSE_ID, appID, clickButtonID);
+			
+			contentInstance.setContent(content);
+			contentInstance.setContentInfo(MimeMediaType.OBIX + ":" + MimeMediaType.ENCOD_PLAIN);
+			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_CLICKS;
+			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_DESCRIPTOR.toString(), contentInstance);			
+			
+			statusCode = containerContentResponse.getResponseStatusCode();
+			if(statusCode.equals(ResponseStatusCode.CREATED)) {
+				LOGGER.info("oneM2M CLICKS DESCRIPTION content instance for the clickButton created under resource ["+target+"]");
+				LOGGER.debug("===\n"+content+"\n===");
+				LOGGER.info(containerContentResponse);
+			} else {
+				LOGGER.error("oneM2M CLICKS DESCRIPTION content instance for the clickButton can't be created under resource ["+target+"]");
+				LOGGER.debug("===\n"+content+"\n===");
+				LOGGER.error(containerContentResponse);		
+				throw new BadRequestException("oneM2M CLICKS DESCRIPTION content instance for the clickButton can't be created under resource ["+target+"]");
+			}
+			
+			
 			// Create initial contentInstance on the button Click STATE container resources
 			content = ObixUtil.getStateRep(clickButtonID, new Click());
 			contentInstance.setContent(content);
-			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_CLICK;
+			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_CLICKS + "/" + BUTTON_FEATURE.DATA_CLICK;
 			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_CLICK.toString(), contentInstance);
 		
 			statusCode = containerContentResponse.getResponseStatusCode();
@@ -875,7 +987,7 @@ public class SampleController {
 			// Create initial contentInstance on the button DoubleClick STATE container resources
 			content = ObixUtil.getStateRep(clickButtonID, new DoubleClick());
 			contentInstance.setContent(content);
-			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_DOUBLECLICK;
+			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_CLICKS + "/"+ BUTTON_FEATURE.DATA_DOUBLECLICK;
 			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_DOUBLECLICK.toString(), contentInstance);
 		
 			statusCode = containerContentResponse.getResponseStatusCode();
@@ -890,23 +1002,7 @@ public class SampleController {
 				throw new BadRequestException("oneM2M DATA DOUBLECLICK content instance for the clickButton can't be defined under resource ["+target+"]");
 			}
 			
-			// Create initial contentInstance on the button Hold STATE container resources
-			content = ObixUtil.getStateRep(clickButtonID,  Duration.ZERO);
-			contentInstance.setContent(content);
-			target = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_HOLD;	
-			containerContentResponse = RequestSender.createContentInstance(target,Operations.SET_STATE_HOLD.toString(), contentInstance);
-		
-			statusCode = containerContentResponse.getResponseStatusCode();
-			if(statusCode.equals(ResponseStatusCode.CREATED) | statusCode.equals(ResponseStatusCode.UPDATED) | statusCode.equals(ResponseStatusCode.OK)) {
-				LOGGER.info("oneM2M DATA HOLD content instance for the clickButton defined under resource ["+target+"]");
-				LOGGER.debug("===\n"+content+"\n===");
-				LOGGER.info(containerContentResponse);
-			} else {
-				LOGGER.error("oneM2M DATA HOLD content instance for the clickButton can't be defined under resource ["+target+"]");
-				LOGGER.debug("===\n"+content+"\n===");
-				LOGGER.error(containerContentResponse);
-				throw new BadRequestException("oneM2M DATA HOLD content instance for the clickButton can't be defined under resource ["+target+"]");
-			}
+
 		} else {
 			LOGGER.info("oneM2M Application Entity & ressources Containers for the clickButton were already created under appID ["+appID+"] & poa ["+poa+"]");
 		}		

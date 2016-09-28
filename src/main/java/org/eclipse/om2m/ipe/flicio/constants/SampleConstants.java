@@ -32,11 +32,17 @@ public class SampleConstants {
 	public static final int FLIC_DEAMON_CONNECTION_RETRY = 60;
 	
 	public static enum BUTTON_FEATURE {
-		DATA_POSITION("DATA_POSITION"), 
-		DATA_PEERING("DATA_PEERING"), 
-		DATA_CLICK("DATA_CLICK"), 
-		DATA_DOUBLECLICK("DATA_DOUBLECLICK"), 
-		DATA_HOLD("DATA_HOLD");
+
+		DATA_BUTTON("BUTTON"), 
+		DATA_POSITION("POSITION"), 
+		DATA_HOLD("HOLD"),
+		
+		DATA_PEERING("PEERING"),
+		
+		DATA_CLICKS("CLICKS"),
+		DATA_CLICK("CLICK"), 
+		DATA_DOUBLECLICK("DOUBLECLICK");
+		
 		private final String value;
 		
 		private BUTTON_FEATURE(final String value){
@@ -47,6 +53,7 @@ public class SampleConstants {
 			return value;
 		}
 	};
+	
 
 	public static enum ButtonPosition {
 		buttondown("ButtonIsDown"), 
@@ -82,7 +89,7 @@ public class SampleConstants {
 	public static final String MN_AE_PREFIX = "mnae";
 	public static final String CONTAINER_NAME_CLICKBUTTON = "FLIC.io_ClickButton";
 	public static final String CONTAINER_NAME_FLICDEAMON = "FLIC.io_Deamon";
-
+	
 	public static enum DATA_QUERY_STRING { 
 		op("op"),
 		clickbuttonid("clickbuttonid"),

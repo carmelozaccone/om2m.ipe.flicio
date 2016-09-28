@@ -92,24 +92,6 @@ public class ObixUtil {
 		descriptor.add(new Str("location",ClickButton.LOCATION));
 		descriptor.add(new Str("appId",appId));
 		
-		// OP GetStatePosition from SCL DataBase
-		Op opStatePosition = new Op();
-		opStatePosition.setName("getStatePosition");
-		opStatePosition.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_POSITION+"/"+ ShortName.LATEST));
-		opStatePosition.setIs(new Contract("retrieve"));
-		opStatePosition.setIn(new Contract("obix:Nil"));
-		opStatePosition.setOut(new Contract("obix:Nil"));
-		descriptor.add(opStatePosition);
-		
-		// OP GetStatePosition from SCL IPU
-		Op opStatePositionDirect = new Op();
-		opStatePositionDirect.setName("getStatePosition(Direct)");
-		opStatePositionDirect.setHref(new Uri(prefix + "?"+DATA_QUERY_STRING.op+"="+ Operations.GET_STATE_POSITION_DIRECT +"&"+DATA_QUERY_STRING.clickbuttonid+"=" + clickButtonID));
-		opStatePositionDirect.setIs(new Contract("execute"));
-		opStatePositionDirect.setIn(new Contract("obix:Nil"));
-		opStatePositionDirect.setOut(new Contract("obix:Nil"));
-		descriptor.add(opStatePositionDirect);
-				
 		// OP GetStatePeering from SCL DataBase
 		Op opStatePeering = new Op();
 		opStatePeering.setName("getStatePeering");
@@ -128,10 +110,87 @@ public class ObixUtil {
 		opStateDownPeering.setOut(new Contract("obix:Nil"));
 		descriptor.add(opStateDownPeering);
 
+		return ObixEncoder.toString(descriptor);
+	}
+
+	/**
+	 * Returns an obix XML representation describing the click button.
+	 * @param cseId - SclBase id
+	 * @param appId - Application Id
+	 * @param String - the ClickButton ID
+	 * @return Obix XML representation
+	 */
+	public static String getDescriptorRep_Button(String cseId, String appId, String clickButtonID) {
+		String prefix = cseId+"/"+ Constants.CSE_NAME + "/" + appId;
+		// oBIX
+		Obj descriptor = new Obj();
+		descriptor.add(new Str("type",ClickButton.TYPE));
+		descriptor.add(new Str("location",ClickButton.LOCATION));
+		descriptor.add(new Str("appId",appId));
+		
+		//========================================================
+		//group the BUTTON_FEATURE.DATA_POSITION & BUTTON_FEATURE.DATA_HOLD features into a specific subcontainer
+		// OP GetStatePosition from SCL DataBase
+		Op opStatePosition = new Op();
+		opStatePosition.setName("getStatePosition");
+		opStatePosition.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_BUTTON+"/"+BUTTON_FEATURE.DATA_POSITION+"/"+ ShortName.LATEST));
+		opStatePosition.setIs(new Contract("retrieve"));
+		opStatePosition.setIn(new Contract("obix:Nil"));
+		opStatePosition.setOut(new Contract("obix:Nil"));
+		descriptor.add(opStatePosition);
+		
+		// OP GetStatePosition from SCL IPU
+		Op opStatePositionDirect = new Op();
+		opStatePositionDirect.setName("getStatePosition(Direct)");
+		opStatePositionDirect.setHref(new Uri(prefix + "?"+DATA_QUERY_STRING.op+"="+ Operations.GET_STATE_POSITION_DIRECT +"&"+DATA_QUERY_STRING.clickbuttonid+"=" + clickButtonID));
+		opStatePositionDirect.setIs(new Contract("execute"));
+		opStatePositionDirect.setIn(new Contract("obix:Nil"));
+		opStatePositionDirect.setOut(new Contract("obix:Nil"));
+		descriptor.add(opStatePositionDirect);
+				
+		// OP GetStateHold from SCL DataBase
+		Op opStateHold = new Op();
+		opStateHold.setName("getStateHold");
+		opStateHold.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_BUTTON+"/"+BUTTON_FEATURE.DATA_HOLD+"/"+ ShortName.LATEST));
+		opStateHold.setIs(new Contract("retrieve"));
+		opStateHold.setIn(new Contract("obix:Nil"));
+		opStateHold.setOut(new Contract("obix:Nil"));
+		descriptor.add(opStateHold);
+		
+		// OP GetStateHold from SCL IPU
+		Op opStateHoldDirect = new Op();
+		opStateHoldDirect.setName("getStateHold(Direct)");
+		opStateHoldDirect.setHref(new Uri(prefix + "?"+DATA_QUERY_STRING.op+"="+ Operations.GET_STATE_HOLD_DIRECT +"&"+DATA_QUERY_STRING.clickbuttonid+"=" + clickButtonID));
+		opStateHoldDirect.setIs(new Contract("execute"));
+		opStateHoldDirect.setIn(new Contract("obix:Nil"));
+		opStateHoldDirect.setOut(new Contract("obix:Nil"));
+		descriptor.add(opStateHoldDirect);
+		
+		//========================================================
+		return ObixEncoder.toString(descriptor);
+	}
+	
+	/**
+	 * Returns an obix XML representation describing the click button.
+	 * @param cseId - SclBase id
+	 * @param appId - Application Id
+	 * @param String - the ClickButton ID
+	 * @return Obix XML representation
+	 */
+	public static String getDescriptorRep_Clicks(String cseId, String appId, String clickButtonID) {
+		String prefix = cseId+"/"+ Constants.CSE_NAME + "/" + appId;
+		// oBIX
+		Obj descriptor = new Obj();
+		descriptor.add(new Str("type",ClickButton.TYPE));
+		descriptor.add(new Str("location",ClickButton.LOCATION));
+		descriptor.add(new Str("appId",appId));
+
+		//========================================================
+		//group the BUTTON_FEATURE.DATA_CLICK & BUTTON_FEATURE.DATA_DOUBLECLICK features into a specific subcontainer
 		// OP GetStateClick from SCL DataBase
 		Op opStateClick = new Op();
 		opStateClick.setName("getStateClick");
-		opStateClick.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_CLICK+"/"+ ShortName.LATEST));
+		opStateClick.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_CLICKS+"/"+BUTTON_FEATURE.DATA_CLICK+"/"+ ShortName.LATEST));
 		opStateClick.setIs(new Contract("retrieve"));
 		opStateClick.setIn(new Contract("obix:Nil"));
 		opStateClick.setOut(new Contract("obix:Nil"));
@@ -150,7 +209,7 @@ public class ObixUtil {
 		// OP GetStateDoubleClick from SCL DataBase
 		Op opStateDoubleClick = new Op();
 		opStateDoubleClick.setName("getStateDoubleClick");
-		opStateDoubleClick.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_DOUBLECLICK+"/"+ ShortName.LATEST));
+		opStateDoubleClick.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_CLICKS+"/"+BUTTON_FEATURE.DATA_DOUBLECLICK+"/"+ ShortName.LATEST));
 		opStateDoubleClick.setIs(new Contract("retrieve"));
 		opStateDoubleClick.setIn(new Contract("obix:Nil"));
 		opStateDoubleClick.setOut(new Contract("obix:Nil"));
@@ -164,28 +223,11 @@ public class ObixUtil {
 		opStateDoubleClickDirect.setIn(new Contract("obix:Nil"));
 		opStateDoubleClickDirect.setOut(new Contract("obix:Nil"));
 		descriptor.add(opStateDoubleClickDirect);
-		
-		// OP GetStateHold from SCL DataBase
-		Op opStateHold = new Op();
-		opStateHold.setName("getStateHold");
-		opStateHold.setHref(new Uri(prefix  +"/"+BUTTON_FEATURE.DATA_HOLD+"/"+ ShortName.LATEST));
-		opStateHold.setIs(new Contract("retrieve"));
-		opStateHold.setIn(new Contract("obix:Nil"));
-		opStateHold.setOut(new Contract("obix:Nil"));
-		descriptor.add(opStateHold);
-		
-		// OP GetStateHold from SCL IPU
-		Op opStateHoldDirect = new Op();
-		opStateHoldDirect.setName("getStateHold(Direct)");
-		opStateHoldDirect.setHref(new Uri(prefix + "?"+DATA_QUERY_STRING.op+"="+ Operations.GET_STATE_HOLD_DIRECT +"&"+DATA_QUERY_STRING.clickbuttonid+"=" + clickButtonID));
-		opStateHoldDirect.setIs(new Contract("execute"));
-		opStateHoldDirect.setIn(new Contract("obix:Nil"));
-		opStateHoldDirect.setOut(new Contract("obix:Nil"));
-		descriptor.add(opStateHoldDirect);
+		//========================================================
 
 		return ObixEncoder.toString(descriptor);
 	}
-
+	
 	/**
 	 * Returns an obix XML representation describing the Position state of the ClickButton oneM2M resource
 	 * @param clickButtonID - oneM2M Application ID
