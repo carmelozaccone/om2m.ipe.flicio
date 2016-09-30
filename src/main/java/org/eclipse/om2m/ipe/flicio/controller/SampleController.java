@@ -52,7 +52,6 @@ import io.flic.fliclib.javaclient.Bdaddr;
 import io.flic.fliclib.javaclient.ButtonConnectionChannel;
 import io.flic.fliclib.javaclient.ButtonScanner;
 import io.flic.fliclib.javaclient.FlicClient;
-import io.flic.fliclib.javaclient.TimerTask;
 import io.flic.fliclib.javaclient.enums.ConnectionStatus;
 import io.flic.fliclib.javaclient.enums.CreateConnectionChannelError;
 import io.flic.fliclib.javaclient.enums.DisconnectReason;
@@ -104,7 +103,6 @@ public class SampleController {
              * @param alreadyVerified The server has already verified this button, which means you can connect to it even if it's private
              */
             public void onAdvertisementPacket(final Bdaddr bdaddr, String name, int rssi, boolean isPrivate, boolean alreadyVerified) throws IOException {
-                final ButtonScanner thisButtonScanner = this;
 
                 if (alreadyVerified) {
                 	LOGGER.info("Flic.io button ["+bdaddr+"] is already associated; currrent RSSI signal strenght is ["+rssi+"]");

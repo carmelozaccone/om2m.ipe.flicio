@@ -25,12 +25,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.om2m.commons.exceptions.BadRequestException;
-import org.eclipse.om2m.ipe.flicio.model.Lamp;
 
 public class ClickButtonModel {
 	
 	private static Map<String,ClickButton> CLICKBUTTONS = new HashMap<String, ClickButton>();
-	private static List<ClickButtonObserver> OBSERVERS = new ArrayList<ClickButtonObserver>();
 	
 	private ClickButtonModel(){
 	}
@@ -45,33 +43,6 @@ public class ClickButtonModel {
 		}
 	}
 	
-	public static void addObserver(ClickButtonObserver obs){
-		if(!OBSERVERS.contains(obs)){
-			OBSERVERS.add(obs);
-		}
-	}
-	
-	public static void deleteObserver(ClickButtonObserver obs){
-		if(OBSERVERS.contains(obs)){
-			OBSERVERS.remove(obs);
-		}
-	}
-	
-	private static void notifyObservers(final String buttonID, final boolean state){
-		new Thread(){
-			@Override
-			public void run() {
-				for(ClickButtonObserver obs: OBSERVERS){
-					obs.onClickButtonStateChange(buttonID, state);
-				}
-			}
-		}.start();
-	}
-	
-	public static interface ClickButtonObserver{
-		void onClickButtonStateChange(String buttonID, boolean state);
-	}
-
 	public static void setModel(
 			Map<String, ClickButton> clickButton2) {
 		CLICKBUTTONS = clickButton2;

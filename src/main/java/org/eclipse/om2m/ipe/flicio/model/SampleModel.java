@@ -32,9 +32,7 @@ import org.eclipse.om2m.ipe.flicio.constants.SampleConstants.ButtonPosition;
 
 public class SampleModel {
 	
-	private static Map<String,ClickButton> CLICKBUTTONS = new HashMap<String, ClickButton>();
-	private static List<ClickButtonObserver> OBSERVERS = new ArrayList<ClickButtonObserver>();
-	
+	private static Map<String,ClickButton> CLICKBUTTONS = new HashMap<String, ClickButton>();	
 	private SampleModel(){
 	}
 
@@ -97,7 +95,6 @@ public class SampleModel {
 				click.setClickHold(duration);
 				break;
 		}
-		notifyObservers(clickButtonID, buttonPosition);
 	}
 
 	public static ButtonPeering getClickButtonPeering(String clickButtonID) {
@@ -108,7 +105,6 @@ public class SampleModel {
 	public static void setClickButtonPeering(String clickButtonID, ButtonPeering buttonPeering) throws BadRequestException{
 		checkClickButtonIDValue(clickButtonID);
 		CLICKBUTTONS.get(clickButtonID).setButtonPeering(buttonPeering);
-		notifyObservers(clickButtonID, buttonPeering);
 	}
 
 	public static Click getClickButtonClick(String clickButtonID) throws BadRequestException {
@@ -119,7 +115,6 @@ public class SampleModel {
 	public static void setClickButtonClick(String clickButtonID, Click click) throws BadRequestException {
 		checkClickButtonIDValue(clickButtonID);
 		CLICKBUTTONS.get(clickButtonID).setClick(click);
-		notifyObservers(clickButtonID, click);
 	}
 	
 	public static DoubleClick getClickButtonDoubleClick(String clickButtonID) throws BadRequestException {
@@ -130,7 +125,6 @@ public class SampleModel {
 	public static void setClickButtonDoubleClick(String clickButtonID, DoubleClick doubleClick) throws BadRequestException {
 		checkClickButtonIDValue(clickButtonID);
 		CLICKBUTTONS.get(clickButtonID).setDoubleClick(doubleClick);
-		notifyObservers(clickButtonID, doubleClick);
 	}
 	
 	public static void checkClickButtonIDValue(String clickButtonID) throws BadRequestException {
@@ -139,84 +133,6 @@ public class SampleModel {
 		}
 	}
 	
-	public static void addObserver(ClickButtonObserver obs){
-		if(!OBSERVERS.contains(obs)){
-			OBSERVERS.add(obs);
-		}
-	}
-	
-	public static void deleteObserver(ClickButtonObserver obs){
-		if(OBSERVERS.contains(obs)){
-			OBSERVERS.remove(obs);
-		}
-	}
-	
-	private static void notifyObservers(final String clickButtonID, final ButtonPosition buttonPosition){
-		new Thread(){
-			@Override
-			public void run() {
-				for(ClickButtonObserver obs: OBSERVERS){
-					obs.onClickButtonPositionChange(clickButtonID, buttonPosition);
-				}
-			}
-		}.start();
-	}
-
-	private static void notifyObservers(final String clickButtonID, final ButtonPeering buttonPeering){
-		new Thread(){
-			@Override
-			public void run() {
-				for(ClickButtonObserver obs: OBSERVERS){
-					obs.onClickButtonPeeringChange(clickButtonID, buttonPeering);
-				}
-			}
-		}.start();
-	}
-
-	private static void notifyObservers(final String clickButtonID, final Click click){
-		new Thread(){
-			@Override
-			public void run() {
-				for(ClickButtonObserver obs: OBSERVERS){
-					obs.onClickButtonNewClick(clickButtonID, click);
-				}
-			}
-		}.start();
-	}
-
-	private static void notifyObservers(final String clickButtonID, final DoubleClick doubleClick){
-		new Thread(){
-			@Override
-			public void run() {
-				for(ClickButtonObserver obs: OBSERVERS){
-					obs.onClickButtonNewDoubleClick(clickButtonID, doubleClick);
-				}
-			}
-		}.start();
-	}
-	
-	private static void notifyObservers(final String clickButtonID, final Duration buttonHoldDuration){
-		new Thread(){
-			@Override
-			public void run() {
-				for(ClickButtonObserver obs: OBSERVERS){
-					obs.onClickButtonNewButtonHold(clickButtonID, buttonHoldDuration);
-				}
-			}
-		}.start();
-	}
-	
-	/**
-	 * e.g. If we would like to implement a GUI to display a Virtual View of the Physical Flic.io Button 
-	 */
-	public static interface ClickButtonObserver {
-		public void onClickButtonPositionChange(String clickButtonID, ButtonPosition buttonPosition);
-		public void onClickButtonPeeringChange(String clickButtonID, ButtonPeering buttonPeering);
-		public void onClickButtonNewClick(String clickButtonID, Click click);
-		public void onClickButtonNewDoubleClick(String clickButtonID, DoubleClick doubleClick);
-		public void onClickButtonNewButtonHold(String clickButtonID, Duration buttonHoldDuration);
-	}
-
 	public static void setModel(Map<String, ClickButton> clickButtons) {
 		CLICKBUTTONS = clickButtons;
 	}
