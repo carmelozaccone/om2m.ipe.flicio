@@ -2,6 +2,7 @@
 Eclipse oM2M Shorcutlabs Flic.io Interworking Proxy Entity
 
 #Complementary onfiguration for the Eclipse oM2M config.ini
+http://projects.eclipse.org/projects/technology.om2m
 
 #Add the following reference to the "osgi.bundles="
 reference\:file\:org.eclipse.om2m.ipe.flicio_1.0.0.20161114-1119.jar@4
