@@ -5,7 +5,7 @@ Eclipse oM2M Shorcutlabs Flic.io Interworking Proxy Entity
 http://projects.eclipse.org/projects/technology.om2m
 
 #Add the following reference to the "osgi.bundles="
-reference\:file\:org.eclipse.om2m.ipe.flicio_1.0.0.20161114-1119.jar@4
+reference\:file\:org.eclipse.om2m.ipe.flicio-1.0.0-SNAPSHOT.jar@4
 
 #Configure the deamon URL thru the
 #IP address of the remote Flic.io BLE Deamon
