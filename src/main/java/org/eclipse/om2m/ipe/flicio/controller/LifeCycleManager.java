@@ -71,10 +71,7 @@ public class LifeCycleManager {
 	public static void defineFlicDeamon() {  
 		//default parameter are used
 		flicDeamonHost = new FlicDeamon();
-		//load config from MANIFEST
-		String configFile ="TOBEDONE"; 
-		LOGGER.info("Reading Flic Deamon Network Socket configuration from: ["+configFile+"]");
-		flicDeamonHost.loadConfig();
+		LOGGER.info("Using Flic Deamon Network Socket: ["+flicDeamonHost.toString()+"]");
 	}
 	
 	/*
@@ -452,8 +449,8 @@ public class LifeCycleManager {
 			//assign the Flic.io clien to the Controller to enable further interactions between IPE administration GUI and Flic.io network Deamon   
 			SampleController.setFlicClient(flicClient,flicDeamonHost);
 			
-			clickButtons = new HashMap<String, ClickButton>();
-			ClickButtonModel.setModel(clickButtons);
+//			clickButtons = new HashMap<String, ClickButton>();
+//			ClickButtonModel.setModel(clickButtons);
 			
 			
 			//Define in which method handler the Hold Flic.io event should be processed

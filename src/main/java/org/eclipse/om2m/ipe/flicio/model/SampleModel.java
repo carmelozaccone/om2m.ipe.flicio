@@ -32,8 +32,18 @@ import org.eclipse.om2m.ipe.flicio.constants.SampleConstants.ButtonPosition;
 
 public class SampleModel {
 	
+	private static Map<String,FlicDeamon> FLICDEAMONS = new HashMap<String, FlicDeamon>();	
 	private static Map<String,ClickButton> CLICKBUTTONS = new HashMap<String, ClickButton>();	
+
 	private SampleModel(){
+	}
+
+	public static void addFlicDeamon(FlicDeamon flicDeamon) throws BadRequestException {
+		String flicDeamonID = flicDeamon.getFlicDeamonID();
+		if (FLICDEAMONS.containsKey(flicDeamonID)) {
+			throw new BadRequestException("Existing Flic Deamon ID\n");
+		}
+		FLICDEAMONS.put(flicDeamonID, flicDeamon);
 	}
 
 	public static void addClickButton(ClickButton clickButton) throws BadRequestException {

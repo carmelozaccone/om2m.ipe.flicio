@@ -327,7 +327,7 @@ public class SampleController {
 		String appID  = createAppID(clickButtonID);
 		
 		// Send the information to the CSE
-		String targetID = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_POSITION;
+		String targetID = SampleConstants.CSE_PREFIX + "/" + appID +"/"+ BUTTON_FEATURE.DATA_BUTTON + "/" + BUTTON_FEATURE.DATA_POSITION;
 		ContentInstance cin = new ContentInstance();
 		String content = ObixUtil.getStateRep(clickButtonID, buttonPosition);
 		cin.setContent(content);
@@ -366,7 +366,7 @@ public class SampleController {
 		String appID  = createAppID(clickButtonID);
 		
 		// Send the information to the CSE
-		String targetID = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_PEERING;
+		String targetID = SampleConstants.CSE_PREFIX + "/" + appID + "/" + SampleConstants.CONTAINER_NAME_CLICKBUTTON + "/" + BUTTON_FEATURE.DATA_PEERING;
 		ContentInstance cin = new ContentInstance();
 		String content = ObixUtil.getStateRep(clickButtonID, buttonPeering);
 		cin.setContent(content);
@@ -405,7 +405,7 @@ public class SampleController {
 		String appID  = createAppID(clickButtonID);
 		
 		// Send the information to the CSE
-		String targetID = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_CLICK;
+		String targetID = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_CLICKS + "/" + BUTTON_FEATURE.DATA_CLICK;
 		ContentInstance cin = new ContentInstance();
 		String content = ObixUtil.getStateRep(clickButtonID, click);
 		cin.setContent(content);
@@ -444,7 +444,7 @@ public class SampleController {
 		String appID  = createAppID(clickButtonID);
 		
 		// Send the information to the CSE
-		String targetID = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_DOUBLECLICK;
+		String targetID = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_CLICKS + "/" + BUTTON_FEATURE.DATA_DOUBLECLICK;
 		ContentInstance cin = new ContentInstance();
 		String content = ObixUtil.getStateRep(clickButtonID, doubleClick);
 		cin.setContent(content);
@@ -483,7 +483,7 @@ public class SampleController {
 		String appID  = createAppID(clickButtonID);
 		
 		// Send the information to the CSE
-		String targetID = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_HOLD;
+		String targetID = SampleConstants.CSE_PREFIX + "/" + appID + "/" + BUTTON_FEATURE.DATA_BUTTON + "/" + BUTTON_FEATURE.DATA_HOLD;
 		ContentInstance cin = new ContentInstance();
 		String content = ObixUtil.getStateRep(clickButtonID, holdTime);
 		cin.setContent(content);

@@ -9,8 +9,8 @@ public class FlicDeamon {
     /** Default  Flic.io network deamon type */
     public final static String TYPE = "DEAMON-Flic.io";
     
-	private final String host;
-	private final int port;
+	private String host;
+	private int port;
 	private final String flicDeamonID;
 
 	public FlicDeamon(){
@@ -36,13 +36,6 @@ public class FlicDeamon {
 
 	public String getFlicDeamonID() {
 		return flicDeamonID;
-	}
-	
-	/**
-	 * read the config from the MANIFEST
-	 */
-	public void loadConfig() {
-	
 	}
 	
 	public String toString() {

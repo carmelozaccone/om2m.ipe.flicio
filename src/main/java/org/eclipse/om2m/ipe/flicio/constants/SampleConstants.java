@@ -26,8 +26,9 @@ public class SampleConstants {
 	private SampleConstants(){}
 	
 	public static final String POA = "Flic.io_sample";
-	public static final String FLIC_DEAMON_HOST = "localhost";
-	public static final int FLIC_DEAMON_PORT = 5551;
+	public static final String FLIC_DEAMON_HOST = System.getProperty("org.eclipse.om2m.ipe.flicio.flicd.ip","localhost");
+	public static final int FLIC_DEAMON_PORT = Integer.parseInt(System.getProperty("org.eclipse.om2m.ipe.flicio.flicd.port","5551"));
+	
 	//time (in secondà before to retry to connetc to the Flic.io network Deamon if not reachable
 	public static final int FLIC_DEAMON_CONNECTION_RETRY = 60;
 	
